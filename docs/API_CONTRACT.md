@@ -1,0 +1,110 @@
+# API Contract — REST v0
+
+## 1. Quy ước chung
+- Base path: `/api/v1`
+- JSON UTF-8; ngày giờ dạng ISO-8601; tiền dạng decimal.
+- Phản hồi thành công đề xuất:
+```json
+{
+  "success": true,
+  "message": "OK",
+  "data": {},
+  "timestamp": "2026-01-01T10:00:00+07:00"
+}
+```
+- Phản hồi lỗi đề xuất:
+```json
+{
+  "success": false,
+  "message": "Dữ liệu không hợp lệ",
+  "errors": [{"field": "email", "message": "Email không hợp lệ"}],
+  "timestamp": "2026-01-01T10:00:00+07:00"
+}
+```
+- Mã trạng thái: `200` đọc/cập nhật thành công; `201` tạo mới; `204` xóa thành công không body; `400` validation/nghiệp vụ sai; `401` chưa xác thực; `403` không đủ quyền; `404` không tìm thấy; `409` xung đột trạng thái/ghế; `500` lỗi ngoài dự kiến.
+- Endpoint dưới đây là đề xuất thiết kế, cần khớp với ERD và quyết định nghiệp vụ đã duyệt.
+
+## 2. Xác thực và tài khoản
+| Method | Endpoint | Quyền | Mục đích |
+|---|---|---|---|
+| POST | `/auth/register` | Public | Đăng ký thành viên |
+| POST | `/auth/login` | Public | Đăng nhập, trả access token và set refresh cookie |
+| POST | `/auth/refresh` | Public (cookie) | Làm mới access token bằng refresh cookie |
+| POST | `/auth/logout` | Public (cookie) | Thu hồi refresh token và xóa cookie |
+| GET | `/auth/csrf` | Public | Bootstrap XSRF-TOKEN cookie for refresh/logout |
+| GET | `/auth/me` | Auth | Thông tin tài khoản đang đăng nhập |
+| GET | `/members/me` | Member | Xem hồ sơ |
+| PATCH | `/members/me` | Member | Cập nhật hồ sơ |
+| POST | `/members/me/change-password` | Member | Đổi mật khẩu |
+| GET | `/members/me/point-transactions?from=&to=&type=` | Member | Xem lịch sử điểm |
+| GET | `/members/me/bookings?status=&page=&size=` | Member | Xem vé/đơn của mình |
+
+**Cơ chế đã chốt:** JWT HS256 cho access token (mặc định 15 phút, giữ trong bộ nhớ frontend); refresh token opaque (mặc định 7 ngày) lưu hash trong bảng `refresh_tokens` và gửi qua cookie `HttpOnly`, `SameSite=Lax` khi cùng site hoặc `SameSite=None; Secure` khi cross-site. Mỗi lần refresh sẽ thu hồi token cũ và phát token mới (rotation); logout thu hồi token hiện tại. Backend bật CORS credentials cho đúng origin frontend.
+
+**CSRF for cookie refresh/logout:** call `GET /auth/csrf` first to receive the readable `XSRF-TOKEN` cookie, then send its value in the `X-XSRF-TOKEN` header on `POST /auth/refresh` and `POST /auth/logout`. The CSRF cookie uses the same `SameSite` and `Secure` settings as the refresh cookie, including `SameSite=None; Secure` for cross-site deployment.
+
+## 3. Dữ liệu công khai
+| Method | Endpoint | Quyền | Mục đích |
+|---|---|---|---|
+| GET | `/movies?status=&q=&page=&size=` | Public | Danh sách/tìm kiếm phim |
+| GET | `/movies/{movieId}` | Public | Chi tiết phim |
+| GET | `/movies/{movieId}/showtimes?date=` | Public | Suất chiếu theo phim/ngày |
+| GET | `/showtimes/{showtimeId}/seats` | Public | Sơ đồ ghế và tình trạng ghế |
+| GET | `/promotions?active=true` | Public | Khuyến mãi công khai |
+| GET | `/ticket-prices` | Public | Giá vé đang áp dụng |
+
+## 4. Đặt vé và thanh toán
+| Method | Endpoint | Quyền | Mục đích |
+|---|---|---|---|
+| POST | `/bookings` | Member | Tạo đơn và giữ ghế tạm trong 5 phút |
+| GET | `/bookings/{bookingId}` | Chủ đơn hoặc Staff/Admin | Xem chi tiết đơn |
+| POST | `/bookings/{bookingId}/confirm` | Member hoặc luồng hệ thống | Xác nhận đơn sau khi thanh toán mô phỏng thành công |
+| POST | `/bookings/{bookingId}/cancel` | Chủ đơn nếu đủ điều kiện; Staff/Admin theo quyền | Hủy đơn theo chính sách |
+| GET | `/bookings/{bookingId}/tickets` | Chủ đơn hoặc Staff/Admin | Xem vé phát hành |
+| POST | `/bookings/{bookingId}/payments` | Chủ đơn/Staff | Ghi nhận kết quả thanh toán mô phỏng |
+
+**Quy tắc đã chốt:** giữ ghế 5 phút; thanh toán mô phỏng; chỉ cộng điểm sau khi thanh toán thành công; backend/database chống đặt trùng ghế theo suất chiếu. Khi hết hạn giữ ghế mà chưa thanh toán thành công, đơn hết hạn và ghế được giải phóng.
+
+**TBD trước khi implement:** request schema, idempotency key, chi tiết state machine, tỷ lệ cộng/đổi điểm, thời hạn hủy cụ thể và chính sách hoàn tiền/hoàn điểm. Không triển khai hoàn tiền thật hoặc tự đặt ra thời hạn hủy.
+
+### Payload khởi tạo đơn — ví dụ đề xuất
+```json
+{
+  "showtimeId": 123,
+  "seatIds": [501, 502],
+  "promotionCode": null,
+  "pointsToUse": 0
+}
+```
+Backend phải tự xác thực giá, khuyến mãi, điểm và tình trạng ghế; không tin giá/tổng tiền gửi từ frontend.
+
+## 5. Quản trị — Staff/Admin
+| Method | Endpoint | Quyền đề xuất | Mục đích |
+|---|---|---|---|
+| GET/POST | `/admin/movies` | Role được duyệt | Danh sách/tạo phim |
+| GET/PATCH/DELETE | `/admin/movies/{id}` | Role được duyệt | Xem/sửa/ngừng phim |
+| GET/POST | `/admin/rooms` | Admin/Manager | Danh sách/tạo phòng |
+| PATCH | `/admin/rooms/{id}/seats` | Admin/Manager | Cập nhật sơ đồ/loại ghế |
+| GET/POST | `/admin/showtimes` | Role được duyệt | Danh sách/tạo suất chiếu |
+| PATCH/DELETE | `/admin/showtimes/{id}` | Role được duyệt | Sửa/ngừng suất chiếu |
+| GET/POST | `/admin/promotions` | Role được duyệt | Danh sách/tạo khuyến mãi |
+| PATCH/DELETE | `/admin/promotions/{id}` | Role được duyệt | Sửa/ngừng khuyến mãi |
+| GET | `/staff/members?q=` | Staff/Admin | Tra cứu thành viên |
+| GET | `/staff/bookings?q=&status=&page=&size=` | Staff/Admin | Tra cứu đơn đặt |
+| POST | `/staff/sales` | Staff/Admin | Bán vé tại quầy |
+| GET/POST/PATCH | `/admin/staff` và `/admin/staff/{id}` | Admin/Manager | Quản lý nhân viên |
+| GET | `/admin/reports/revenue?from=&to=` | Admin/Manager | Báo cáo doanh thu |
+| GET | `/admin/reports/tickets?from=&to=` | Admin/Manager | Báo cáo số vé |
+
+**Lưu ý:** các route quản trị ở đây là bản nháp; phân quyền và CRUD cụ thể phải theo SRS đã được nhóm thống nhất.
+
+## 6. Quy tắc backend
+- Validate request bằng Bean Validation và kiểm tra nghiệp vụ ở Service.
+- Controller chỉ nhận/trả DTO; không trả entity JPA trực tiếp.
+- Dùng transaction cho tạo booking, chiếm ghế, ghi payment và giao dịch điểm.
+- Giữ ghế tối đa 5 phút; cần cơ chế xử lý đơn hết hạn để giải phóng ghế an toàn.
+- Chỉ ghi giao dịch cộng điểm sau khi trạng thái thanh toán mô phỏng đã thành công; thao tác phải idempotent để tránh cộng điểm hai lần.
+- Xử lý xung đột ghế bằng `409 Conflict`; frontend phải refresh sơ đồ ghế.
+- Phân quyền cả ở route và service cho hành động nhạy cảm.
+- Không trả password hash, secret, stack trace hoặc thông tin provider nhạy cảm.
+- Bổ sung OpenAPI/Swagger; API contract phải được cập nhật khi thay đổi.

@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/cinema}
+    username: ${SPRING_DATASOURCE_USERNAME:cinema}
+    password: ${SPRING_DATASOURCE_PASSWORD:cinema}
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: false
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:local-development-secret-key-change-me-please-0123456789}
+
+logging:
+  level:
+    com.cinema: DEBUG
