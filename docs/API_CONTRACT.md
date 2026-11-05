@@ -31,7 +31,7 @@
 | POST | `/auth/login` | Public | Đăng nhập, trả access token và set refresh cookie |
 | POST | `/auth/refresh` | Public (cookie) | Làm mới access token bằng refresh cookie |
 | POST | `/auth/logout` | Public (cookie) | Thu hồi refresh token và xóa cookie |
-| GET | `/auth/csrf` | Public | Bootstrap XSRF-TOKEN cookie for refresh/logout |
+| GET | `/auth/csrf` | Public | Bootstrap CSRF cookie and response token for refresh/logout |
 | GET | `/auth/me` | Auth | Thông tin tài khoản đang đăng nhập |
 | GET | `/members/me` | Member | Xem hồ sơ |
 | PATCH | `/members/me` | Member | Cập nhật hồ sơ |
@@ -41,7 +41,9 @@
 
 **Cơ chế đã chốt:** JWT HS256 cho access token (mặc định 15 phút, giữ trong bộ nhớ frontend); refresh token opaque (mặc định 7 ngày) lưu hash trong bảng `refresh_tokens` và gửi qua cookie `HttpOnly`, `SameSite=Lax` khi cùng site hoặc `SameSite=None; Secure` khi cross-site. Mỗi lần refresh sẽ thu hồi token cũ và phát token mới (rotation); logout thu hồi token hiện tại. Backend bật CORS credentials cho đúng origin frontend.
 
-**CSRF for cookie refresh/logout:** call `GET /auth/csrf` first to receive the readable `XSRF-TOKEN` cookie, then send its value in the `X-XSRF-TOKEN` header on `POST /auth/refresh` and `POST /auth/logout`. The CSRF cookie uses the same `SameSite` and `Secure` settings as the refresh cookie, including `SameSite=None; Secure` for cross-site deployment.
+**CSRF for cookie refresh/logout:** call `GET /auth/csrf` with credentials first. It sets the `XSRF-TOKEN` cookie and returns `{ "token": "..." }` in `data`; send that response value as the `X-XSRF-TOKEN` header on `POST /auth/refresh` and `POST /auth/logout`. This allows a frontend on a different allowed origin to bootstrap CSRF without reading an API-origin cookie. The browser still sends the cookie with credentials and Spring Security requires the cookie/header match. The CSRF cookie uses the same `SameSite` and `Secure` settings as the refresh cookie, including `SameSite=None; Secure` for cross-site deployment.
+
+**Cập nhật hồ sơ:** `PATCH /members/me` nhận `fullName`, `email` và `phone`. `POST /members/me/change-password` nhận `currentPassword` và `newPassword`; mật khẩu mới phải từ 8 đến 72 ký tự, khác mật khẩu hiện tại. Đổi mật khẩu thu hồi toàn bộ refresh token và yêu cầu đăng nhập lại.
 
 ## 3. Dữ liệu công khai
 | Method | Endpoint | Quyền | Mục đích |
@@ -53,15 +55,17 @@
 | GET | `/promotions?active=true` | Public | Khuyến mãi công khai |
 | GET | `/ticket-prices` | Public | Giá vé đang áp dụng |
 
+**Hành vi catalog đã triển khai:** `GET /movies` trả `PageResponse` với `content`, `page`, `size`, `totalElements`, `totalPages`; chỉ công bố `NOW_SHOWING`/`COMING_SOON`, `q` tìm không phân biệt hoa/thường theo tiêu đề và `status` chỉ lọc trong hai trạng thái công khai đó. Chi tiết phim không tồn tại trả `404`. `GET /promotions` chỉ trả promotion có `status=ACTIVE` trong khoảng thời gian hiệu lực hiện tại. `GET /ticket-prices` chỉ trả bảng giá có hiệu lực trong ngày hiện tại; API chỉ công bố giá, không tự suy diễn quy tắc tính giá/khuyến mãi khi đặt vé.
+
 ## 4. Đặt vé và thanh toán
 | Method | Endpoint | Quyền | Mục đích |
 |---|---|---|---|
 | POST | `/bookings` | Member | Tạo đơn và giữ ghế tạm trong 5 phút |
-| GET | `/bookings/{bookingId}` | Chủ đơn hoặc Staff/Admin | Xem chi tiết đơn |
+| GET | `/bookings/{bookingId}` | Chủ đơn hoặc EMPLOYEE/ADMIN | Xem chi tiết đơn |
 | POST | `/bookings/{bookingId}/confirm` | Member hoặc luồng hệ thống | Xác nhận đơn sau khi thanh toán mô phỏng thành công |
-| POST | `/bookings/{bookingId}/cancel` | Chủ đơn nếu đủ điều kiện; Staff/Admin theo quyền | Hủy đơn theo chính sách |
-| GET | `/bookings/{bookingId}/tickets` | Chủ đơn hoặc Staff/Admin | Xem vé phát hành |
-| POST | `/bookings/{bookingId}/payments` | Chủ đơn/Staff | Ghi nhận kết quả thanh toán mô phỏng |
+| POST | `/bookings/{bookingId}/cancel` | Chủ đơn nếu đủ điều kiện; EMPLOYEE/ADMIN theo quyền | Hủy đơn theo chính sách |
+| GET | `/bookings/{bookingId}/tickets` | Chủ đơn hoặc EMPLOYEE/ADMIN | Xem vé phát hành |
+| POST | `/bookings/{bookingId}/payments` | Chủ đơn/EMPLOYEE | Ghi nhận kết quả thanh toán mô phỏng |
 
 **Quy tắc đã chốt:** giữ ghế 5 phút; thanh toán mô phỏng; chỉ cộng điểm sau khi thanh toán thành công; backend/database chống đặt trùng ghế theo suất chiếu. Khi hết hạn giữ ghế mà chưa thanh toán thành công, đơn hết hạn và ghế được giải phóng.
 
@@ -78,20 +82,20 @@
 ```
 Backend phải tự xác thực giá, khuyến mãi, điểm và tình trạng ghế; không tin giá/tổng tiền gửi từ frontend.
 
-## 5. Quản trị — Staff/Admin
+## 5. Quản trị — EMPLOYEE/ADMIN
 | Method | Endpoint | Quyền đề xuất | Mục đích |
 |---|---|---|---|
-| GET/POST | `/admin/movies` | Role được duyệt | Danh sách/tạo phim |
-| GET/PATCH/DELETE | `/admin/movies/{id}` | Role được duyệt | Xem/sửa/ngừng phim |
+| GET/POST | `/admin/movies` | ADMIN | Danh sách/tạo phim |
+| GET/PATCH/DELETE | `/admin/movies/{id}` | ADMIN | Xem/sửa/ngừng phim |
 | GET/POST | `/admin/rooms` | Admin/Manager | Danh sách/tạo phòng |
 | PATCH | `/admin/rooms/{id}/seats` | Admin/Manager | Cập nhật sơ đồ/loại ghế |
 | GET/POST | `/admin/showtimes` | Role được duyệt | Danh sách/tạo suất chiếu |
 | PATCH/DELETE | `/admin/showtimes/{id}` | Role được duyệt | Sửa/ngừng suất chiếu |
 | GET/POST | `/admin/promotions` | Role được duyệt | Danh sách/tạo khuyến mãi |
 | PATCH/DELETE | `/admin/promotions/{id}` | Role được duyệt | Sửa/ngừng khuyến mãi |
-| GET | `/staff/members?q=` | Staff/Admin | Tra cứu thành viên |
-| GET | `/staff/bookings?q=&status=&page=&size=` | Staff/Admin | Tra cứu đơn đặt |
-| POST | `/staff/sales` | Staff/Admin | Bán vé tại quầy |
+| GET | `/staff/members?q=` | EMPLOYEE/Admin | Tra cứu thành viên |
+| GET | `/staff/bookings?q=&status=&page=&size=` | EMPLOYEE/Admin | Tra cứu đơn đặt |
+| POST | `/staff/sales` | EMPLOYEE/Admin | Bán vé tại quầy |
 | GET/POST/PATCH | `/admin/staff` và `/admin/staff/{id}` | Admin/Manager | Quản lý nhân viên |
 | GET | `/admin/reports/revenue?from=&to=` | Admin/Manager | Báo cáo doanh thu |
 | GET | `/admin/reports/tickets?from=&to=` | Admin/Manager | Báo cáo số vé |

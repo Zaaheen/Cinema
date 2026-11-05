@@ -14,7 +14,7 @@ Browser
 Mục tiêu: URL truy cập ổn định khi laptop tắt, chi phí thấp cho đồ án/demo. Đây không phải cam kết rằng mọi dịch vụ sẽ luôn miễn phí.
 
 ## 2. Điều kiện cần xác nhận trước triển khai
-- **Database:** chỉ dùng Supabase PostgreSQL nếu giảng viên/đề bài không bắt buộc MySQL/SQL Server. Không chuyển DB chỉ vì tiện deploy.
+- **Database:** nhóm đã chọn Supabase PostgreSQL cho development dùng chung. Quyết định này vẫn phải phù hợp yêu cầu giảng viên/đề bài nếu có ràng buộc MySQL/SQL Server.
 - Xác nhận Java 21 có tương thích môi trường môn học; nếu bắt buộc Java 17, điều chỉnh build/runtime.
 - Chọn auth (JWT hay session cookie) và cấu hình CORS/credentials phù hợp.
 - Chọn nơi lưu poster/ảnh; không lưu ảnh tải lên trực tiếp trong filesystem ephemeral của Cloud Run.
@@ -45,12 +45,13 @@ Mục tiêu: URL truy cập ổn định khi laptop tắt, chi phí thấp cho �
 - Cloud Run có thể scale-to-zero tùy cấu hình, nên request đầu có thể cold start. Cần kiểm tra giá và hạn mức hiện hành trước khi công khai demo.
 
 ## 5. Database — Supabase PostgreSQL
-- Tạo project và lưu connection details ở secret store, không commit vào repo.
-- Dùng connection string/SSL theo hướng dẫn hiện hành của Supabase; chọn direct hoặc pooler phù hợp môi trường kết nối.
-- Chạy Flyway migrations trên database mới và kiểm tra schema.
+- Tạo một project development dùng chung; owner mời các thành viên qua Supabase Dashboard, không chia sẻ tài khoản owner.
+- Mỗi developer tạo `backend/.env` từ `backend/.env.example` và điền connection details của project. Không commit file này hoặc gửi mật khẩu qua Git.
+- Dùng JDBC URL/SSL từ Supabase Connect; chọn direct hoặc pooler phù hợp với mạng và giới hạn kết nối thực tế.
+- Một người phụ trách chạy/kiểm chứng Flyway migration đầu tiên trên database mới; không reset schema dùng chung.
 - Tạo dữ liệu demo không nhạy cảm.
 - Xác nhận giới hạn gói Free, quy tắc pause do không hoạt động, backup/restore và giới hạn kết nối tại thời điểm triển khai.
-- Dùng database riêng cho local/test và production/demo.
+- Dùng database/project riêng cho test phá dữ liệu và production/demo. Docker Compose còn lại là phương án local tùy chọn.
 
 ## 6. CI/CD tối thiểu
 1. Pull request: build frontend, test backend, kiểm tra migration/test phù hợp.

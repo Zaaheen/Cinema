@@ -8,7 +8,7 @@ Nguồn: `Quan ly rap chieu phim_SRS_v1.1_SE03.docx`, mục 4–7. SRS mô tả 
 |---|---|
 | Khách hàng chưa là thành viên | Xem phim, khuyến mãi, giá vé, lịch chiếu; đăng ký; đăng nhập |
 | Khách hàng là thành viên | Các chức năng khách chưa là thành viên; đặt vé; quản lý tài khoản, vé và lịch sử điểm |
-| Nhân viên | Quản lý bán vé, quản lý đặt vé, tìm kiếm thành viên; SRS cũng nêu quản lý phim và khuyến mãi trong mô tả phạm vi quyền |
+| Nhân viên (`EMPLOYEE`) | Quản lý bán vé, quản lý đặt vé, tìm kiếm thành viên; SRS cũng nêu quản lý phim và khuyến mãi trong mô tả phạm vi quyền |
 | Quản lý/Admin | Quyền cao nhất; quản lý nhân viên, thành viên, phòng chiếu, phim, khuyến mãi và thống kê |
 
 **Cần xác nhận:** SRS có khác biệt nhỏ giữa mô tả quyền ở phần tổng quan và các use case cụ thể. Phân quyền cuối cùng cần dựa trên bảng quyền được giảng viên/nhóm duyệt.
