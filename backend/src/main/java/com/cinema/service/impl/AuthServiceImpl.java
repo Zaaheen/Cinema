@@ -4,6 +4,8 @@ import com.cinema.config.JwtProperties;
 import com.cinema.dto.auth.LoginRequest;
 import com.cinema.dto.auth.RegisterRequest;
 import com.cinema.dto.auth.UserResponse;
+import com.cinema.dto.member.ChangePasswordRequest;
+import com.cinema.dto.member.UpdateProfileRequest;
 import com.cinema.entity.Member;
 import com.cinema.entity.RefreshToken;
 import com.cinema.entity.Role;
@@ -154,6 +156,39 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> BusinessException.unauthorized("Không tìm thấy tài khoản"));
         Member member = memberRepository.findByUserUsername(username).orElse(null);
         return UserResponse.from(user, member);
+    }
+
+    @Override
+    public UserResponse updateProfile(String username, UpdateProfileRequest request) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> BusinessException.unauthorized("Không tìm thấy tài khoản"));
+        String email = normalize(request.email());
+        String phone = normalize(request.phone());
+        if (email != null && userRepository.existsByEmailAndIdNot(email, user.getId())) {
+            throw BusinessException.conflict("Email đã được sử dụng");
+        }
+        if (phone != null && userRepository.existsByPhoneAndIdNot(phone, user.getId())) {
+            throw BusinessException.conflict("Số điện thoại đã được sử dụng");
+        }
+        user.setFullName(request.fullName().trim());
+        user.setEmail(email);
+        user.setPhone(phone);
+        Member member = memberRepository.findByUserUsername(username).orElse(null);
+        return UserResponse.from(user, member);
+    }
+
+    @Override
+    public void changePassword(String username, ChangePasswordRequest request) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> BusinessException.unauthorized("Không tìm thấy tài khoản"));
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw BusinessException.badRequest("Mật khẩu hiện tại không chính xác");
+        }
+        if (passwordEncoder.matches(request.newPassword(), user.getPasswordHash())) {
+            throw BusinessException.badRequest("Mật khẩu mới phải khác mật khẩu hiện tại");
+        }
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        refreshTokenRepository.revokeAllByUserId(user.getId());
     }
 
     private AuthTokens issueTokens(User user, Member member) {

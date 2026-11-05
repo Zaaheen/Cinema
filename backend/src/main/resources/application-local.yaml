@@ -11,8 +11,10 @@ spring:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:local-development-secret-key-change-me-please-0123456789}
+    secret: ${JWT_SECRET}
 
 logging:
   level:
     com.cinema: DEBUG
+    org.flywaydb.core.FlywayExecutor: WARN
+    org.hibernate.orm.connections.pooling: WARN

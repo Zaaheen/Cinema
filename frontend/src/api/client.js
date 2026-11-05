@@ -4,12 +4,6 @@ import { env } from '../lib/env'
 let accessToken = null
 let refreshPromise = null
 
-function readCookie(name) {
-  const prefix = `${encodeURIComponent(name)}=`
-  const cookie = document.cookie.split('; ').find((value) => value.startsWith(prefix))
-  return cookie ? decodeURIComponent(cookie.slice(prefix.length)) : null
-}
-
 export const tokenStore = {
   get: () => accessToken,
   set: (token) => {
@@ -23,10 +17,10 @@ export const apiClient = axios.create({
 })
 
 export async function csrfHeaders() {
-  await apiClient.get('/auth/csrf', { withCredentials: true })
-  const token = readCookie('XSRF-TOKEN')
+  const { data } = await apiClient.get('/auth/csrf', { withCredentials: true })
+  const token = data.data?.token
   if (!token) {
-    throw new Error('CSRF cookie is unavailable to this frontend origin')
+    throw new Error('CSRF bootstrap token is unavailable')
   }
   return { 'X-XSRF-TOKEN': token }
 }

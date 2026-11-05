@@ -81,8 +81,9 @@ public class SecurityConfig {
                                 "/error")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS.toArray(String[]::new)).permitAll()
+                        .requestMatchers("/api/v1/members/**").hasRole("MEMBER")
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/staff/**").hasAnyRole("STAFF", "ADMIN")
+                        .requestMatchers("/api/v1/staff/**").hasAnyRole("EMPLOYEE", "ADMIN")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))

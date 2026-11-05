@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
 import { LoginCard } from '../components/astryx/LoginCard'
 import { getErrorMessage } from '../lib/errors'
+import { roleHome } from '../lib/roles'
 
 export function LoginPage() {
   const { login } = useAuth()
@@ -20,8 +21,8 @@ export function LoginPage() {
     setError(null)
     setIsSubmitting(true)
     try {
-      await login(username.trim(), password)
-      navigate(from, { replace: true })
+      const result = await login(username.trim(), password)
+      navigate(from === '/' ? roleHome(result.user.role) : from, { replace: true })
     } catch (submitError) {
       setError(getErrorMessage(submitError))
     } finally {

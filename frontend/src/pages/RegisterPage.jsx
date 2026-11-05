@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
 import { getErrorMessage } from '../lib/errors'
+import { roleHome } from '../lib/roles'
 
 export function RegisterPage() {
   const { register: registerAccount } = useAuth()
@@ -18,13 +19,13 @@ export function RegisterPage() {
     setError(null)
     setIsSubmitting(true)
     try {
-      await registerAccount({
+      const result = await registerAccount({
         fullName: fullName.trim(),
         username: username.trim(),
         password,
         email: email.trim() || undefined,
       })
-      navigate('/', { replace: true })
+      navigate(roleHome(result.user.role), { replace: true })
     } catch (submitError) {
       setError(getErrorMessage(submitError))
     } finally {
