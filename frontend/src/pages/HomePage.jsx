@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
+import { roleHome, roleLabel } from '../lib/roles'
 
 export function HomePage() {
   const { isAuthenticated, user } = useAuth()
@@ -9,15 +10,15 @@ export function HomePage() {
       <p className="eyebrow">Hệ thống quản lý rạp chiếu phim</p>
       <h1>Đặt vé nhanh, chọn ghế dễ, quản lý rạp gọn.</h1>
       <p className="hero-copy">
-        Khung ứng dụng đã sẵn sàng cho Sprint 1. Đăng nhập để bắt đầu sử dụng các chức năng
-        dành cho thành viên.
+        Khám phá phim đang chiếu, xem thông tin chi tiết và sẵn sàng cho trải nghiệm đặt vé.
       </p>
 
       <div className="hero-actions">
+        <Link className="button button-secondary" to="/movies">Xem phim</Link>
         {isAuthenticated ? (
           <>
-            <Link className="button" to="/account">
-              Tài khoản của {user?.fullName}
+            <Link className="button" to={roleHome(user?.role)}>
+              Không gian {roleLabel(user?.role)}
             </Link>
             <span className="badge">{user?.role}</span>
           </>
@@ -36,7 +37,7 @@ export function HomePage() {
       <div className="feature-grid">
         <article className="feature-card">
           <h2>Lịch chiếu</h2>
-          <p>Danh sách phim và suất chiếu sẽ được nối API ở Sprint 2.</p>
+          <p>Danh sách và chi tiết phim công khai đã sẵn sàng.</p>
         </article>
         <article className="feature-card">
           <h2>Đặt vé</h2>

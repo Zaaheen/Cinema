@@ -208,6 +208,21 @@ h2 {
   font-size: 0.95rem;
 }
 
+.role-dashboard {
+  display: grid;
+  gap: 1rem;
+}
+
+.role-dashboard .feature-card {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.role-dashboard .button {
+  justify-self: start;
+  margin-top: auto;
+}
+
 .form-card {
   width: min(480px, 100%);
   margin: 0 auto;
@@ -285,6 +300,99 @@ h2 {
 .page-status {
   color: var(--muted);
   text-align: center;
+}
+
+.catalog-page,
+.movie-detail {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.catalog-search {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 560px;
+}
+
+.catalog-search label {
+  color: var(--muted);
+}
+
+.catalog-search div {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.catalog-search input {
+  min-width: 0;
+  flex: 1;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(245px, 1fr));
+  gap: 1rem;
+}
+
+.movie-card {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.movie-card img,
+.movie-detail-hero img,
+.movie-poster-placeholder {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+}
+
+.movie-poster-placeholder {
+  display: grid;
+  place-items: center;
+  background: var(--surface-raised);
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.movie-card > div {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.movie-card h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.movie-card p { margin: 0; color: var(--muted); }
+.movie-card .button { justify-self: start; }
+.back-link { color: var(--accent); }
+
+.movie-detail-hero {
+  display: grid;
+  grid-template-columns: minmax(180px, 280px) 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.movie-detail-hero .movie-poster-placeholder { min-height: 270px; }
+.movie-detail-hero p:not(.eyebrow):not(.hero-copy) { max-width: 65ch; }
+
+@media (max-width: 640px) {
+  .catalog-search div,
+  .movie-detail-hero { grid-template-columns: 1fr; }
+  .catalog-search div { flex-direction: column; }
+  .movie-detail-hero img,
+  .movie-detail-hero .movie-poster-placeholder { max-width: 280px; }
 }
 
 @media (max-width: 640px) {

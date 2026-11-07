@@ -1,5 +1,6 @@
 import { Link, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
+import { roleHome, roleLabel } from '../lib/roles'
 
 export function MainLayout() {
   const { user, isAuthenticated, logout } = useAuth()
@@ -18,9 +19,11 @@ export function MainLayout() {
         </Link>
         <nav className="site-nav">
           <Link to="/">Trang chủ</Link>
+          <Link to="/movies">Phim</Link>
           {isAuthenticated ? (
             <>
-              <Link to="/account">{user?.fullName}</Link>
+              <Link to={roleHome(user?.role)}>{roleLabel(user?.role)}</Link>
+              {user?.role === 'MEMBER' ? <Link to="/account">Tài khoản</Link> : null}
               <button type="button" className="link-button" onClick={handleLogout}>
                 Đăng xuất
               </button>

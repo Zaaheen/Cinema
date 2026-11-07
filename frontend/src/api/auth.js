@@ -25,3 +25,12 @@ export async function fetchMe() {
   const { data } = await apiClient.get('/auth/me')
   return data.data
 }
+
+export async function updateProfileRequest(payload) {
+  const { data } = await apiClient.patch('/members/me', payload)
+  return data.data
+}
+
+export async function changePasswordRequest(payload) {
+  await apiClient.post('/members/me/change-password', payload)
+}

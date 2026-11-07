@@ -2,6 +2,8 @@
 .env
 .env.*
 !.env.example
+.claude/
+docs/spec/
 *.pem
 *.key
 

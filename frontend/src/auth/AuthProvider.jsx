@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
+  changePasswordRequest,
   loginRequest,
   logoutRequest,
   refreshRequest,
   registerRequest,
+  updateProfileRequest,
 } from '../api/auth'
 import { tokenStore } from '../api/client'
 import { AuthContext } from './auth-context'
@@ -29,6 +31,7 @@ export function AuthProvider({ children }) {
       const result = await loginRequest(username, password)
       sessionBootstrap = null
       applyAuth(result)
+      return result
     },
     [applyAuth],
   )
@@ -38,6 +41,7 @@ export function AuthProvider({ children }) {
       const result = await registerRequest(payload)
       sessionBootstrap = null
       applyAuth(result)
+      return result
     },
     [applyAuth],
   )
@@ -49,6 +53,18 @@ export function AuthProvider({ children }) {
       sessionBootstrap = null
       clearAuth()
     }
+  }, [clearAuth])
+
+  const updateProfile = useCallback(async (payload) => {
+    const updatedUser = await updateProfileRequest(payload)
+    setUser(updatedUser)
+    return updatedUser
+  }, [])
+
+  const changePassword = useCallback(async (payload) => {
+    await changePasswordRequest(payload)
+    sessionBootstrap = null
+    clearAuth()
   }, [clearAuth])
 
   const hasRole = useCallback(
@@ -102,9 +118,11 @@ export function AuthProvider({ children }) {
       login,
       register,
       logout,
+      updateProfile,
+      changePassword,
       hasRole,
     }),
-    [user, isLoading, login, register, logout, hasRole],
+    [user, isLoading, login, register, logout, updateProfile, changePassword, hasRole],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

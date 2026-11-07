@@ -1,12 +1,12 @@
 # Cinema Management
 
-Website quản lý rạp chiếu phim — backend Spring Boot, frontend React + Vite + JavaScript/JSX, database PostgreSQL (local hoặc Supabase).
+Website quản lý rạp chiếu phim — backend Spring Boot, frontend React + Vite + JavaScript/JSX, database Supabase PostgreSQL dùng chung cho môi trường development.
 
 ## Công nghệ
 
 - Backend: Java 21, Spring Boot 4.1.2, Spring Web MVC, Spring Data JPA, Spring Security (OAuth2 Resource Server), Flyway, springdoc OpenAPI.
 - Frontend: React 19, Vite 8, JavaScript/JSX, React Router, Axios, TanStack Query, React Hook Form, Zod.
-- Database: PostgreSQL 16 (docker-compose local) / Supabase PostgreSQL.
+- Database: Supabase PostgreSQL. Docker Compose chỉ là phương án PostgreSQL local tùy chọn.
 
 ## Cấu trúc
 
@@ -43,17 +43,24 @@ cinema/
 
 - JDK 21
 - Node.js 20+ và npm
-- Docker Desktop (khuyến nghị) hoặc PostgreSQL 15+
+- Tài khoản/connection details của Supabase project chung
+- Docker Desktop hoặc PostgreSQL 15+ (tùy chọn, chỉ khi muốn chạy database local riêng)
 
 ## Chạy nhanh
 
 ### 1. Database
 
-```bash
-docker compose up -d postgres
+```powershell
+Copy-Item backend/.env.example backend/.env
 ```
 
-PostgreSQL chạy tại `localhost:5432`, database/user/password đều là `cinema`.
+Điền connection details từ **Supabase Dashboard → Connect** vào `backend/.env`. Không commit file này. Sau đó cấu hình IntelliJ EnvFile dùng `backend/.env` khi chạy Spring Boot.
+
+Nếu cần database local riêng thay vì Supabase, mới chạy:
+
+```powershell
+docker compose up -d postgres
+```
 
 ### 2. Backend
 
@@ -62,7 +69,7 @@ cd backend
 ./gradlew bootRun
 ```
 
-- Profile mặc định: `local`, tự đọc datasource từ biến môi trường (mặc định khớp docker-compose).
+- Profile mặc định: `local`; datasource đọc từ biến môi trường trong `backend/.env`.
 - Flyway tự chạy migration khi khởi động.
 - API: `http://localhost:8080/api/v1`
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
@@ -87,9 +94,9 @@ Backend (`backend/.env.example`):
 | Biến | Ý nghĩa |
 |---|---|
 | `SPRING_PROFILES_ACTIVE` | `local` hoặc `prod` |
-| `SPRING_DATASOURCE_URL` | JDBC URL PostgreSQL |
-| `SPRING_DATASOURCE_USERNAME` | Tên đăng nhập database |
-| `SPRING_DATASOURCE_PASSWORD` | Mật khẩu database |
+| `SPRING_DATASOURCE_URL` | JDBC URL do Supabase Connect cung cấp, có SSL |
+| `SPRING_DATASOURCE_USERNAME` | Tên đăng nhập do Supabase cung cấp |
+| `SPRING_DATASOURCE_PASSWORD` | Database password của Supabase |
 | `JWT_SECRET` | Khóa HS256, tối thiểu 32 byte |
 | `CORS_ALLOWED_ORIGINS` | Danh sách origin frontend, phân tách bằng dấu phẩy |
 | `PORT` | Cổng backend khi deploy (mặc định 8080) |

@@ -3,7 +3,7 @@
 ## 1. Căn cứ và quyết định đã chốt
 
 - **4 sprint trong `03. [CGDN]_Project_Plan.xlsx` là kế hoạch chính thức.** Bảng 8 giai đoạn trước đây chỉ là phân rã nội bộ và được ánh xạ vào 4 sprint ở mục 5.
-- Database: Supabase PostgreSQL Free (cần xác nhận với giảng viên).
+- Database: **APPROVED nội bộ (31/10/2026)** — Supabase PostgreSQL dùng chung cho development; vẫn phải tuân thủ ràng buộc của giảng viên/đề bài nếu có.
 - Auth: JWT access token ngắn hạn + refresh token lưu trong cookie HttpOnly; refresh có rotation và thu hồi khi logout.
 - Ghế: `seat_type` (`STANDARD`, `VIP`) tách khỏi trạng thái khả dụng.
 - Vé: bảng `tickets` riêng, mỗi ghế đã xác nhận sinh một vé.
@@ -30,20 +30,22 @@
 - [x] Profile `local`, `prod`, `test`; datasource qua biến môi trường.
 - [x] Response envelope, global exception handler, Swagger.
 - [x] JWT access token + refresh cookie luân chuyển; CORS; BCrypt.
-- [x] Test context H2; docker-compose PostgreSQL; Gradle Dockerfile.
-- [x] VERIFIED (local, 31/10/2026): Flyway V1/V2 chạy trên PostgreSQL 16 với database rỗng; seed đủ `ADMIN`, `STAFF`, `MEMBER`.
+- [x] Test context H2; Docker Compose PostgreSQL tùy chọn; Gradle Dockerfile.
+- [x] VERIFIED (local, 31/10/2026): Flyway V1/V2 chạy trên PostgreSQL 16 với database rỗng; seed đủ role nền tảng.
+- [ ] Closeout Sprint 1: cần chạy lại Flyway V1/V2/V3 trên PostgreSQL local/container rỗng và xác minh refresh rotation cạnh tranh trên PostgreSQL. Không được coi H2 là bằng chứng tương đương.
 - [x] VERIFIED (local, 31/10/2026): Gradle backend test và frontend lint/build chạy thành công.
-- [ ] CI Gradle workflow cấu hình xong; chờ GitHub chạy lần đầu để xác minh.
+- [x] VERIFIED (GitHub Actions, 31/10/2026): CI Gradle workflow chạy thành công cho commit khởi tạo.
 - [x] Frontend router, axios refresh interceptor, AuthContext, layout/pages.
-- [ ] Commit khởi tạo (repository hiện chưa có commit).
-- [ ] Xác nhận Supabase với giảng viên và tạo project thật.
+- [x] Commit khởi tạo đã được push lên GitHub (`b286a05`).
+- [x] APPROVED nội bộ: dùng Supabase PostgreSQL cho development dùng chung; Docker là tùy chọn.
+- [ ] Tạo Supabase project, phân quyền thành viên và chạy/kiểm chứng Flyway trên database Supabase rỗng.
 
 ### Sprint 1 — Auth và dữ liệu công khai (10/11 – 20/11)
-- Hoàn thiện đăng ký/đăng nhập/đăng xuất/làm mới token; phân quyền `ADMIN`, `STAFF`, `MEMBER`.
-- Đổi mật khẩu, cập nhật hồ sơ thành viên.
-- API phim đang chiếu/sắp chiếu, tìm kiếm, chi tiết phim, khuyến mãi, giá vé.
-- Trang đăng nhập/đăng ký, danh sách phim, chi tiết phim; loading/empty/error.
-- Test tích hợp auth; seed dữ liệu phim demo.
+- [x] Hoàn thiện đăng ký/đăng nhập/đăng xuất/làm mới token; phân quyền `ADMIN`, `EMPLOYEE`, `MEMBER`.
+- [x] Đổi mật khẩu, cập nhật hồ sơ thành viên.
+- [x] API phim đang chiếu/sắp chiếu, tìm kiếm, chi tiết phim, khuyến mãi, giá vé.
+- [x] Trang đăng nhập/đăng ký, danh sách phim, chi tiết phim; loading/empty/error.
+- [x] Test tích hợp auth và catalog. Seed phim demo là tùy chọn; frontend hiển thị trạng thái rỗng khi chưa có dữ liệu.
 
 ### Sprint 2 — Phòng, ghế, suất chiếu (21/11 – 02/12)
 - CRUD phim, phòng chiếu, cấu hình ghế, suất chiếu (Admin).
@@ -60,7 +62,7 @@
 - Test hai request tranh cùng một ghế: chỉ một đơn thắng.
 
 ### Sprint 4 — Nghiệp vụ nội bộ và phát hành (15/12 – 25/12)
-- Bán vé tại quầy, tra cứu thành viên, quản lý đặt vé (Staff).
+- Bán vé tại quầy, tra cứu thành viên, quản lý đặt vé (EMPLOYEE).
 - Quản lý thành viên, nhân viên, khuyến mãi, thống kê doanh thu (Admin).
 - Cộng điểm sau thanh toán thành công, lịch sử điểm, chống cộng trùng.
 - Hardening: validation, phân quyền, responsive, xử lý lỗi, test tích hợp.

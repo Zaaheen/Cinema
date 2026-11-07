@@ -3,6 +3,7 @@ package com.cinema.controller;
 import com.cinema.common.ApiResponse;
 import com.cinema.config.JwtProperties;
 import com.cinema.dto.auth.AuthResponse;
+import com.cinema.dto.auth.CsrfTokenResponse;
 import com.cinema.dto.auth.LoginRequest;
 import com.cinema.dto.auth.RegisterRequest;
 import com.cinema.dto.auth.UserResponse;
@@ -66,11 +67,10 @@ public class AuthController {
     }
 
     @GetMapping("/csrf")
-    @Operation(summary = "Initialize a CSRF token for refresh and logout")
-    public ApiResponse<Void> csrf(@RequestAttribute(name = "_csrf") CsrfToken csrfToken) {
-        // Accessing the deferred token causes Spring Security to write XSRF-TOKEN.
-        csrfToken.getToken();
-        return ApiResponse.ok(null);
+    @Operation(summary = "Bootstrap the CSRF cookie and response token for refresh and logout")
+    public ApiResponse<CsrfTokenResponse> csrf(@RequestAttribute(name = "_csrf") CsrfToken csrfToken) {
+        // getToken materializes the deferred token and causes Spring Security to write XSRF-TOKEN.
+        return ApiResponse.ok(new CsrfTokenResponse(csrfToken.getToken()));
     }
 
     @PostMapping("/refresh")
