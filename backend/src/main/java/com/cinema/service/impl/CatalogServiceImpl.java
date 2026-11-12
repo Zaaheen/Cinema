@@ -1,6 +1,7 @@
 
 package com.cinema.service.impl;
-
+import java.time.Duration;
+import java.util.Optional;
 import com.cinema.common.PageResponse;
 import com.cinema.dto.catalog.MovieDetailResponse;
 import com.cinema.dto.catalog.MovieSummaryResponse;
@@ -123,7 +124,9 @@ public class CatalogServiceImpl implements CatalogService {
 
     @Override
     public List<TicketPriceResponse> ticketPrices() {
-        return seatPriceRepository.findEffectiveOn(LocalDate.now())
+        return seatPriceRepository.findEffectiveOn(
+                        LocalDate.now(CINEMA_ZONE)
+                )
                 .stream()
                 .map(TicketPriceResponse::from)
                 .toList();
@@ -133,26 +136,50 @@ public class CatalogServiceImpl implements CatalogService {
     public List<ShowtimeResponse> showtimes(
             Long movieId, LocalDate date
     ) {
-        // Kiểm tra phim có tồn tại hay không.
-        if (!movieRepository.existsById(movieId)) {
-            throw BusinessException.notFound("Không tìm thấy phim");
+        // 1. Chỉ cho phép xem lịch chiếu của phim được công khai.
+        Optional<Movie> movie = movieRepository.findByIdAndStatusIn(
+                movieId,
+                List.of("NOW_SHOWING", "COMING_SOON")
+        );
+
+        if (movie.isEmpty()) {
+            throw BusinessException.notFound(
+                    "Không tìm thấy phim hoặc phim chưa được công khai"
+            );
         }
 
-        // Xác định thời điểm bắt đầu ngày được chọn tại Việt Nam.
+        // 2. Lấy ngày hiện tại theo múi giờ Việt Nam.
+        LocalDate today = LocalDate.now(CINEMA_ZONE);
+
+        // 3. Ngày đã qua thì không có lịch chiếu được công bố.
+        if (date.isBefore(today)) {
+            return List.of();
+        }
+
+        // 4. Lấy thời điểm hiện tại.
+        Instant now = Instant.now();
+
+        // 5. Tính mốc đóng bán online: trước giờ chiếu 30 phút.
+        Instant salesCloseThreshold = now.plus(
+                Duration.ofMinutes(30)
+        );
+
+        // 6. Xác định thời điểm bắt đầu ngày được chọn tại Việt Nam.
         Instant startOfDay = date.atStartOfDay(CINEMA_ZONE)
                 .toInstant();
 
-        // Xác định thời điểm bắt đầu ngày tiếp theo tại Việt Nam.
+        // 7. Xác định thời điểm bắt đầu ngày tiếp theo tại Việt Nam.
         Instant startOfNextDay = date.plusDays(1)
                 .atStartOfDay(CINEMA_ZONE)
                 .toInstant();
 
-        // Truy vấn các suất chiếu SCHEDULED trong ngày.
+        // 8. Truy vấn các suất chiếu còn mở bán online.
         return showtimeRepository
                 .findScheduledShowtimesByMovieAndDate(
                         movieId,
                         startOfDay,
-                        startOfNextDay
+                        startOfNextDay,
+                        salesCloseThreshold
                 )
                 .stream()
                 .map(ShowtimeResponse::from)
