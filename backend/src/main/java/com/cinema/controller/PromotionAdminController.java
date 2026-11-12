@@ -24,11 +24,19 @@ public class PromotionAdminController {
         this.promotionService = promotionService;
     }
 
-
     @GetMapping
     public ApiResponse<List<PromotionAdminResponse>> getAllPromotions() {
         return ApiResponse.ok(
                 promotionService.getAllPromotions()
+        );
+    }
+
+    @GetMapping("/{id}")
+    public ApiResponse<PromotionAdminResponse> getPromotionById(
+            @PathVariable Long id) {
+
+        return ApiResponse.ok(
+                promotionService.getPromotionById(id)
         );
     }
 
@@ -47,7 +55,6 @@ public class PromotionAdminController {
                 ));
     }
 
-
     @PatchMapping("/{id}")
     public ApiResponse<PromotionAdminResponse> updatePromotion(
             @PathVariable Long id,
@@ -60,15 +67,5 @@ public class PromotionAdminController {
                 "Cập nhật khuyến mãi thành công",
                 response
         );
-    }
-
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePromotion(
-            @PathVariable Long id) {
-
-        promotionService.deletePromotion(id);
-
-        return ResponseEntity.noContent().build();
     }
 }

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import {
-    getPromotions,
+    getPromotionById,
     createPromotion,
     updatePromotion,
 } from '../api/promotionAdmin'
@@ -47,10 +47,7 @@ export function PromotionFormPage() {
         try {
             setLoading(true)
 
-            const promotions = await getPromotions()
-            const promotion = promotions.find(
-                (item) => String(item.id) === String(id)
-            )
+            const promotion = await getPromotionById(id)
 
             if (!promotion) {
                 toast.error('Không tìm thấy khuyến mãi!')
@@ -89,6 +86,29 @@ export function PromotionFormPage() {
     async function handleSubmit(event) {
         event.preventDefault()
 
+        if (!form.title.trim()) {
+            toast.error('Vui lòng nhập tên khuyến mãi!')
+            return
+        }
+
+        if (!form.discountValue || Number(form.discountValue) <= 0) {
+            toast.error('Giá trị ưu đãi phải lớn hơn 0!')
+            return
+        }
+
+        if (
+            form.discountType === 'PERCENT' &&
+            Number(form.discountValue) > 100
+        ) {
+            toast.error('Mức giảm phần trăm không được vượt quá 100%!')
+            return
+        }
+
+        if (!form.startsAt || !form.endsAt) {
+            toast.error('Vui lòng chọn ngày bắt đầu và ngày kết thúc!')
+            return
+        }
+
         if (new Date(form.endsAt) <= new Date(form.startsAt)) {
             toast.error('Ngày kết thúc phải sau ngày bắt đầu!')
             return
@@ -106,21 +126,13 @@ export function PromotionFormPage() {
 
             if (isEditing) {
                 await updatePromotion(id, payload)
-
-                navigate('/admin/promotions', {
-                    state: {
-                        message: 'Cập nhật khuyến mãi thành công!',
-                    },
-                })
+                toast.success('Cập nhật khuyến mãi thành công!')
             } else {
                 await createPromotion(payload)
-
-                navigate('/admin/promotions', {
-                    state: {
-                        message: 'Thêm khuyến mãi thành công!',
-                    },
-                })
+                toast.success('Thêm khuyến mãi thành công!')
             }
+
+            navigate('/admin/promotions')
         } catch (error) {
             toast.error(
                 error.response?.data?.message ||
@@ -140,7 +152,7 @@ export function PromotionFormPage() {
             <p className="eyebrow">QUẢN TRỊ</p>
 
             <h1>
-                {isEditing ? 'Sửa khuyến mãi' : 'Thêm khuyến mãi'}
+                {isEditing ? 'Chỉnh sửa khuyến mãi' : 'Thêm khuyến mãi'}
             </h1>
 
             <form className="feature-card" onSubmit={handleSubmit}>
@@ -164,19 +176,19 @@ export function PromotionFormPage() {
                 </p>
 
                 <p>
-                    <label>Loại giảm giá</label>
+                    <label>Loại khuyến mãi</label>
                     <select
                         name="discountType"
                         value={form.discountType}
                         onChange={handleChange}
                     >
-                        <option value="PERCENT">Phần trăm</option>
-                        <option value="FIXED">Số tiền</option>
+                        <option value="PERCENT">Giảm theo phần trăm</option>
+                        <option value="FIXED">Giảm số tiền</option>
                     </select>
                 </p>
 
                 <p>
-                    <label>Giá trị giảm</label>
+                    <label>Giá trị ưu đãi</label>
                     <input
                         type="number"
                         name="discountValue"
@@ -217,8 +229,8 @@ export function PromotionFormPage() {
                         value={form.status}
                         onChange={handleChange}
                     >
-                        <option value="ACTIVE">ACTIVE</option>
-                        <option value="INACTIVE">INACTIVE</option>
+                        <option value="ACTIVE">Hoạt động</option>
+                        <option value="INACTIVE">Ngừng hoạt động</option>
                     </select>
                 </p>
 

@@ -13,7 +13,7 @@ import { MemberDashboardPage } from '../pages/MemberDashboardPage'
 import { RoleHomeRoute } from './RoleHomeRoute'
 import { PromotionAdminPage } from '../pages/PromotionAdminPage'
 import { PromotionFormPage } from '../pages/PromotionFormPage'
-
+import { PromotionDetailPage } from '../pages/PromotionDetailPage'
 const MoviesPage = lazy(() => import('../pages/MoviesPage').then((module) => ({ default: module.MoviesPage })))
 const MovieDetailPage = lazy(() => import('../pages/MovieDetailPage').then((module) => ({ default: module.MovieDetailPage })))
 
@@ -40,6 +40,7 @@ export function AppRoutes() {
         <Route element={<ProtectedRoute roles={['ADMIN']} />}>
           <Route path="admin" element={<AdminDashboardPage />} />
           <Route path="admin/promotions" element={<PromotionAdminPage />} />
+          <Route path="admin/promotions/:id" element={<PromotionDetailPage />} />
           <Route path="admin/promotions/new" element={<PromotionFormPage />} />
           <Route path="admin/promotions/:id/edit" element={<PromotionFormPage />} />
         </Route>
@@ -49,5 +50,6 @@ export function AppRoutes() {
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
+
   )
 }

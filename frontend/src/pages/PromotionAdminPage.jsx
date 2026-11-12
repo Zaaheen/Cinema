@@ -1,22 +1,14 @@
 
 import { useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import {
-    getPromotions,
-    deletePromotion,
-} from '../api/promotionAdmin'
+import { getPromotions } from '../api/promotionAdmin'
 
 export function PromotionAdminPage() {
     const [promotions, setPromotions] = useState([])
     const [loading, setLoading] = useState(false)
 
-    const [showDeleteModal, setShowDeleteModal] = useState(false)
-    const [selectedPromotion, setSelectedPromotion] = useState(null)
-    const [deleting, setDeleting] = useState(false)
-
     const navigate = useNavigate()
-    const location = useLocation()
 
     async function loadPromotions() {
         try {
@@ -26,8 +18,7 @@ export function PromotionAdminPage() {
         } catch (error) {
             toast.error(
                 error.response?.data?.message ||
-                'Không tải được danh sách khuyến mãi!',
-                { toastId: 'load-promotions-error' }
+                'Không tải được danh sách khuyến mãi!'
             )
         } finally {
             setLoading(false)
@@ -36,17 +27,6 @@ export function PromotionAdminPage() {
 
     useEffect(() => {
         loadPromotions()
-
-        if (location.state?.message) {
-            toast.success(location.state.message, {
-                toastId: location.state.message,
-            })
-
-            navigate(location.pathname, {
-                replace: true,
-                state: null,
-            })
-        }
     }, [])
 
     function handleAdd() {
@@ -57,44 +37,52 @@ export function PromotionAdminPage() {
         navigate(`/admin/promotions/${id}/edit`)
     }
 
-
-    function handleDelete(item) {
-        setSelectedPromotion(item)
-        setShowDeleteModal(true)
+    function handleDetail(id) {
+        navigate(`/admin/promotions/${id}`)
     }
 
-    function closeDeleteModal() {
-        if (deleting) return
-
-        setShowDeleteModal(false)
-        setSelectedPromotion(null)
+    function getPromotionCode(id) {
+        return `KM${String(id).padStart(4, '0')}`
     }
 
-    async function confirmDelete() {
-        if (!selectedPromotion) return
+    function getPromotionType(type) {
+        if (type === 'PERCENT') return 'Giảm theo phần trăm'
+        if (type === 'FIXED') return 'Giảm số tiền'
+        return type || 'Chưa xác định'
+    }
 
-        try {
-            setDeleting(true)
+    function getPromotionStatus(item) {
+        const now = new Date()
+        const startDate = new Date(item.startsAt)
+        const endDate = new Date(item.endsAt)
 
-            await deletePromotion(selectedPromotion.id)
-
-            setShowDeleteModal(false)
-            setSelectedPromotion(null)
-
-            await loadPromotions()
-
-            toast.success('Xóa khuyến mãi thành công!', {
-                toastId: 'delete-promotion-success',
-            })
-        } catch (error) {
-            toast.error(
-                error.response?.data?.message ||
-                'Xóa khuyến mãi thất bại!',
-                { toastId: 'delete-promotion-error' }
-            )
-        } finally {
-            setDeleting(false)
+        if (item.status === 'INACTIVE') {
+            return 'Ngừng hoạt động'
         }
+
+        if (item.status === 'EXPIRED' || now > endDate) {
+            return 'Đã hết hạn'
+        }
+
+        if (now < startDate) {
+            return 'Sắp diễn ra'
+        }
+
+        return 'Đang diễn ra'
+    }
+
+    function formatDate(date) {
+        if (!date) return ''
+
+        return new Date(date).toLocaleDateString('vi-VN')
+    }
+
+    function formatDiscountValue(item) {
+        if (item.discountType === 'PERCENT') {
+            return `${item.discountValue}%`
+        }
+
+        return `${Number(item.discountValue).toLocaleString('vi-VN')} VNĐ`
     }
 
     return (
@@ -116,37 +104,52 @@ export function PromotionAdminPage() {
                     <table>
                         <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>STT</th>
+                            <th>Mã khuyến mãi</th>
                             <th>Tên khuyến mãi</th>
-                            <th>Loại giảm</th>
-                            <th>Giá trị</th>
+                            <th>Loại khuyến mãi</th>
+                            <th>Giá trị ưu đãi</th>
+                            <th>Ngày bắt đầu</th>
+                            <th>Ngày kết thúc</th>
                             <th>Trạng thái</th>
                             <th>Thao tác</th>
                         </tr>
                         </thead>
 
                         <tbody>
-                        {promotions.map((item) => (
+                        {promotions.map((item, index) => (
                             <tr key={item.id}>
-                                <td>{item.id}</td>
+                                <td>{index + 1}</td>
+
+                                <td>{getPromotionCode(item.id)}</td>
+
                                 <td>{item.title}</td>
-                                <td>{item.discountType}</td>
-                                <td>{item.discountValue}</td>
-                                <td>{item.status}</td>
+
+                                <td>
+                                    {getPromotionType(item.discountType)}
+                                </td>
+
+                                <td>{formatDiscountValue(item)}</td>
+
+                                <td>{formatDate(item.startsAt)}</td>
+
+                                <td>{formatDate(item.endsAt)}</td>
+
+                                <td>{getPromotionStatus(item)}</td>
 
                                 <td>
                                     <button
                                         type="button"
-                                        onClick={() => handleEdit(item.id)}
+                                        onClick={() => handleDetail(item.id)}
                                     >
-                                        Sửa
+                                        Xem chi tiết
                                     </button>
 
                                     <button
                                         type="button"
-                                        onClick={() => handleDelete(item)}
+                                        onClick={() => handleEdit(item.id)}
                                     >
-                                        Xóa
+                                        Chỉnh sửa
                                     </button>
                                 </td>
                             </tr>
@@ -154,7 +157,7 @@ export function PromotionAdminPage() {
 
                         {promotions.length === 0 && (
                             <tr>
-                                <td colSpan="6">
+                                <td colSpan="9">
                                     Chưa có khuyến mãi
                                 </td>
                             </tr>
@@ -163,73 +166,6 @@ export function PromotionAdminPage() {
                     </table>
                 )}
             </div>
-
-            {showDeleteModal && selectedPromotion && (
-                <div
-                    style={{
-                        position: 'fixed',
-                        inset: 0,
-                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        zIndex: 9999,
-                    }}
-                >
-                    <div
-                        style={{
-                            backgroundColor: '#fff',
-                            padding: '28px',
-                            borderRadius: '12px',
-                            width: '90%',
-                            maxWidth: '420px',
-                            boxShadow: '0 8px 30px rgba(0,0,0,0.2)',
-                        }}
-                    >
-                        <h2 style={{ marginTop: 0 }}>
-                            Xác nhận xóa khuyến mãi
-                        </h2>
-
-                        <p>
-                            Bạn có chắc chắn muốn xóa khuyến mãi
-                            <strong> {selectedPromotion.title}</strong> không?
-                        </p>
-
-                        <div
-                            style={{
-                                display: 'flex',
-                                justifyContent: 'flex-end',
-                                gap: '10px',
-                                marginTop: '24px',
-                            }}
-                        >
-                            <button
-                                type="button"
-                                onClick={closeDeleteModal}
-                                disabled={deleting}
-                            >
-                                Hủy
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={confirmDelete}
-                                disabled={deleting}
-                                style={{
-                                    backgroundColor: '#dc3545',
-                                    color: '#fff',
-                                    border: 'none',
-                                    padding: '8px 16px',
-                                    borderRadius: '5px',
-                                    cursor: deleting ? 'not-allowed' : 'pointer',
-                                }}
-                            >
-                                {deleting ? 'Đang xóa...' : 'Xác nhận xóa'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </section>
     )
 }

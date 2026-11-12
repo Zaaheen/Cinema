@@ -6,6 +6,11 @@ export async function getPromotions() {
     return data.data
 }
 
+export async function getPromotionById(id) {
+    const { data } = await apiClient.get(`/admin/promotions/${id}`)
+    return data.data
+}
+
 export async function createPromotion(promotion) {
     const { data } = await apiClient.post('/admin/promotions', promotion)
     return data
@@ -16,10 +21,5 @@ export async function updatePromotion(id, promotion) {
         `/admin/promotions/${id}`,
         promotion
     )
-    return data
-}
-
-export async function deletePromotion(id) {
-    const { data } = await apiClient.delete(`/admin/promotions/${id}`)
     return data
 }
