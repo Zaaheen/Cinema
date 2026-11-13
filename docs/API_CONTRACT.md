@@ -57,6 +57,8 @@
 
 **Hành vi catalog đã triển khai:** `GET /movies` trả `PageResponse` với `content`, `page`, `size`, `totalElements`, `totalPages`; chỉ công bố `NOW_SHOWING`/`COMING_SOON`, `q` tìm không phân biệt hoa/thường theo tiêu đề và `status` chỉ lọc trong hai trạng thái công khai đó. Chi tiết phim không tồn tại trả `404`. `GET /promotions` chỉ trả promotion có `status=ACTIVE` trong khoảng thời gian hiệu lực hiện tại. `GET /ticket-prices` chỉ trả bảng giá có hiệu lực trong ngày hiện tại; API chỉ công bố giá, không tự suy diễn quy tắc tính giá/khuyến mãi khi đặt vé.
 
+**Quy tắc lịch chiếu — APPROVED:** `GET /movies/{movieId}/showtimes?date=YYYY-MM-DD` dùng múi giờ nghiệp vụ `Asia/Ho_Chi_Minh` và chỉ công bố movie có trạng thái `NOW_SHOWING` hoặc `COMING_SOON`; movie không tồn tại hoặc không công khai trả `404`. Ngày đã qua trả danh sách rỗng. Với hôm nay và ngày tương lai, API chỉ trả showtime có `status=SCHEDULED` còn mở bán online; một suất còn mở bán khi `now < startsAt - 30 phút`. Không giới hạn cứng thời gian mở lịch: ngày chưa có lịch chiếu trả danh sách rỗng. Mỗi phần tử trả `id`, `startsAt`, `endsAt`, `roomName`, `status`.
+
 ## 4. Đặt vé và thanh toán
 | Method | Endpoint | Quyền | Mục đích |
 |---|---|---|---|
@@ -67,7 +69,7 @@
 | GET | `/bookings/{bookingId}/tickets` | Chủ đơn hoặc EMPLOYEE/ADMIN | Xem vé phát hành |
 | POST | `/bookings/{bookingId}/payments` | Chủ đơn/EMPLOYEE | Ghi nhận kết quả thanh toán mô phỏng |
 
-**Quy tắc đã chốt:** giữ ghế 5 phút; thanh toán mô phỏng; chỉ cộng điểm sau khi thanh toán thành công; backend/database chống đặt trùng ghế theo suất chiếu. Khi hết hạn giữ ghế mà chưa thanh toán thành công, đơn hết hạn và ghế được giải phóng.
+**Quy tắc đã chốt:** giữ ghế 5 phút; thanh toán mô phỏng; chỉ cộng điểm sau khi thanh toán thành công; backend/database chống đặt trùng ghế theo suất chiếu. Khi hết hạn giữ ghế mà chưa thanh toán thành công, đơn hết hạn và ghế được giải phóng. Backend phải kiểm tra lại điều kiện mở bán online trong transaction khi tạo booking/giữ ghế: showtime phải là `SCHEDULED` và phải còn hơn 30 phút trước `startsAt`; thời gian giữ ghế 5 phút không được vượt quá thời điểm đóng bán.
 
 **TBD trước khi implement:** request schema, idempotency key, chi tiết state machine, tỷ lệ cộng/đổi điểm, thời hạn hủy cụ thể và chính sách hoàn tiền/hoàn điểm. Không triển khai hoàn tiền thật hoặc tự đặt ra thời hạn hủy.
 
