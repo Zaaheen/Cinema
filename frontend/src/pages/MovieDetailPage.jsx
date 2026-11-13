@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { fetchMovie } from '../api/catalog'
+import { useAuth } from '../auth/useAuth'
 import { getErrorMessage } from '../lib/errors'
 
 export function MovieDetailPage() {
   const { movieId } = useParams()
+  const { user } = useAuth()
   const [movie, setMovie] = useState(null)
   const [status, setStatus] = useState('loading')
   const [error, setError] = useState(null)
@@ -43,6 +45,11 @@ export function MovieDetailPage() {
         <div><dt>Hãng phim</dt><dd>{movie.studio || 'Đang cập nhật'}</dd></div>
       </dl>
       {movie.trailerUrl ? <a className="button" href={movie.trailerUrl} target="_blank" rel="noreferrer">Xem trailer</a> : null}
+      {user?.role === 'ADMIN' ? (
+        <Link className="button button-secondary" to={`/admin/movies/${movie.id}/edit`}>
+          Chỉnh sửa phim
+        </Link>
+      ) : null}
     </section>
   )
 }

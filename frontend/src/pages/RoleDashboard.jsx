@@ -8,7 +8,7 @@ const DASHBOARDS = {
     title: 'Trung tâm quản trị rạp',
     description: 'Theo dõi cấu hình rạp và chuẩn bị quản lý danh mục, nhân sự, khuyến mãi và báo cáo.',
     cards: [
-      ['Danh mục phim', 'Quản lý phim sẽ dùng các API /admin sau khi phần CRUD được triển khai.'],
+      ['Danh mục phim', 'Tạo phim mới trong hệ thống.', '/admin/movies/add', 'Thêm phim'],
       ['Vận hành rạp', 'Phòng chiếu, ghế và suất chiếu thuộc phạm vi Sprint 2.'],
       ['Báo cáo', 'Doanh thu và nhân sự chưa có API được duyệt trong Sprint 1.'],
     ],
@@ -45,11 +45,11 @@ export function RoleDashboard({ role }) {
       <h1>{dashboard.title}</h1>
       <p className="hero-copy">Chào {user?.fullName}. Bạn đang đăng nhập với vai trò {roleLabel(role)}.</p>
       <div className="feature-grid">
-        {dashboard.cards.map(([title, description, href]) => (
+        {dashboard.cards.map(([title, description, href, actionLabel]) => (
           <article className="feature-card" key={title}>
             <h2>{title}</h2>
             <p>{description}</p>
-            {href ? <Link className="button button-secondary" to={href}>Mở chức năng</Link> : null}
+            {href ? <Link className="button button-secondary" to={href}>{actionLabel ?? 'Mở chức năng'}</Link> : null}
           </article>
         ))}
       </div>

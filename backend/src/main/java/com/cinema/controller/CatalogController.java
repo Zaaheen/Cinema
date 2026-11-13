@@ -44,3 +44,4 @@ public class CatalogController {
     @GetMapping("/ticket-prices") @Operation(summary = "Giá vé đang áp dụng")
     public ApiResponse<List<TicketPriceResponse>> ticketPrices() { return ApiResponse.ok(catalogService.ticketPrices()); }
 }
+    
