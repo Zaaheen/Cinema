@@ -91,8 +91,8 @@ Backend phải tự xác thực giá, khuyến mãi, điểm và tình trạng g
 | PATCH | `/admin/rooms/{id}/seats` | Admin/Manager | Cập nhật sơ đồ/loại ghế |
 | GET/POST | `/admin/showtimes` | Role được duyệt | Danh sách/tạo suất chiếu |
 | PATCH/DELETE | `/admin/showtimes/{id}` | Role được duyệt | Sửa/ngừng suất chiếu |
-| GET/POST | `/admin/promotions` | Role được duyệt | Danh sách/tạo khuyến mãi |
-| PATCH/DELETE | `/admin/promotions/{id}` | Role được duyệt | Sửa/ngừng khuyến mãi |
+| GET/POST | `/admin/promotions` | ADMIN | Danh sách/tạo khuyến mãi |
+| GET/PATCH | `/admin/promotions/{id}` | ADMIN | Xem chi tiết/cập nhật khuyến mãi |
 | GET | `/staff/members?q=` | EMPLOYEE/Admin | Tra cứu thành viên |
 | GET | `/staff/bookings?q=&status=&page=&size=` | EMPLOYEE/Admin | Tra cứu đơn đặt |
 | POST | `/staff/sales` | EMPLOYEE/Admin | Bán vé tại quầy |
@@ -101,6 +101,8 @@ Backend phải tự xác thực giá, khuyến mãi, điểm và tình trạng g
 | GET | `/admin/reports/tickets?from=&to=` | Admin/Manager | Báo cáo số vé |
 
 **Lưu ý:** các route quản trị ở đây là bản nháp; phân quyền và CRUD cụ thể phải theo SRS đã được nhóm thống nhất.
+
+**Quản trị khuyến mãi — APPROVED:** chỉ `ADMIN` được gọi các endpoint trên. Request tạo/cập nhật nhận `title`, `description` (nullable), `discountType` (`PERCENT` hoặc `FIXED`), `discountValue`, `startsAt`, `endsAt`, `status` (nullable; khi tạo mặc định `ACTIVE`). `discountValue` phải lớn hơn 0; nếu `discountType=PERCENT` thì không được vượt 100; `endsAt` phải sau `startsAt`. Response trả `id`, các trường request và `status`. Tạo mới trả `201`; đọc/cập nhật thành công trả `200`; request không hợp lệ trả `400`; ID không tồn tại trả `404`. Không có endpoint xóa cứng khuyến mãi.
 
 ## 6. Quy tắc backend
 - Validate request bằng Bean Validation và kiểm tra nghiệp vụ ở Service.

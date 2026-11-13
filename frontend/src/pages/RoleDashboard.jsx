@@ -11,6 +11,7 @@ const DASHBOARDS = {
       ['Danh mục phim', 'Quản lý phim sẽ dùng các API /admin sau khi phần CRUD được triển khai.'],
       ['Vận hành rạp', 'Phòng chiếu, ghế và suất chiếu thuộc phạm vi Sprint 2.'],
       ['Báo cáo', 'Doanh thu và nhân sự chưa có API được duyệt trong Sprint 1.'],
+      ['Quản lý khuyến mãi', 'Thêm, xem, sửa và xóa các chương trình khuyến mãi.', '/admin/promotions'],
     ],
   },
   EMPLOYEE: {
