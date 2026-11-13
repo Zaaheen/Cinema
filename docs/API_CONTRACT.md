@@ -87,6 +87,7 @@ Backend phải tự xác thực giá, khuyến mãi, điểm và tình trạng g
 |---|---|---|---|
 | GET/POST | `/admin/movies` | ADMIN | Danh sách/tạo phim |
 | GET/PATCH/DELETE | `/admin/movies/{id}` | ADMIN | Xem/sửa/ngừng phim |
+| POST | `/admin/movies/poster` | ADMIN | Tải poster PNG lên Cloudinary, trả URL ảnh |
 | GET/POST | `/admin/rooms` | Admin/Manager | Danh sách/tạo phòng |
 | PATCH | `/admin/rooms/{id}/seats` | Admin/Manager | Cập nhật sơ đồ/loại ghế |
 | GET/POST | `/admin/showtimes` | Role được duyệt | Danh sách/tạo suất chiếu |
@@ -101,6 +102,12 @@ Backend phải tự xác thực giá, khuyến mãi, điểm và tình trạng g
 | GET | `/admin/reports/tickets?from=&to=` | Admin/Manager | Báo cáo số vé |
 
 **Lưu ý:** các route quản trị ở đây là bản nháp; phân quyền và CRUD cụ thể phải theo SRS đã được nhóm thống nhất.
+
+**Tạo phim — IMPLEMENTED:** `POST /admin/movies` nhận JSON gồm `title`, `genre`, `releaseDate`, `durationMinutes`, `version`, `castText`, `director`, `studio`, `synopsis`, `trailerUrl`, `posterUrl`; trả `201 Created` với `MovieDetailResponse` trong `ApiResponse`. `title`, `durationMinutes`, `version` bắt buộc; `durationMinutes` phải lớn hơn 0. `genre` nếu có chỉ nhận một trong `Hành động`, `Hài kịch`, `Kinh dị`, `Khoa học viễn tưởng`, `Tình cảm`. `posterUrl` nếu có phải là HTTP(S) URL kết thúc bằng `.png`. Endpoint hiện được `SecurityConfig` giới hạn cho `ADMIN`; quyền nghiệp vụ cuối cùng vẫn cần nhóm xác nhận theo phần quyết định còn mở ở `docs/REQUIREMENTS_MAPPING.md`.
+
+**Chỉnh sửa phim — IMPLEMENTED:** `PATCH /admin/movies/{id}` nhận cùng các trường chi tiết như API tạo phim và trả `200 OK` với `MovieDetailResponse`. Form gửi đầy đủ bộ trường có thể chỉnh sửa; `title`, `durationMinutes`, `version` bắt buộc. Phim không tồn tại trả `404`; validation trả `400`. Khi sửa phim cũ, thể loại hiện tại được giữ nguyên nếu không đổi; thể loại mới chọn phải thuộc danh sách cho phép. `status` không nhận từ request và được giữ nguyên cho tới khi nhóm duyệt quy tắc đổi trạng thái. Endpoint yêu cầu role `ADMIN` theo cấu hình hiện tại.
+
+**Tải poster — IMPLEMENTED:** `POST /admin/movies/poster` nhận `multipart/form-data` với field `file`, chỉ role `ADMIN`; chấp nhận ảnh PNG tối đa 5 MB. Backend ký request bằng `CLOUDINARY_API_KEY` và `CLOUDINARY_API_SECRET`, gửi ảnh tới Cloudinary và trả `201 Created` với `data.posterUrl` là HTTPS URL. Thiếu cấu hình trả `503`; tệp không hợp lệ, thiếu field hoặc quá dung lượng trả `400`; sai Content-Type trả `415`; Cloudinary không khả dụng trả `502`. Cần thiết lập `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` trong `backend/.env` từ Cloudinary Dashboard; không đưa các giá trị thật vào Git.
 
 ## 6. Quy tắc backend
 - Validate request bằng Bean Validation và kiểm tra nghiệp vụ ở Service.

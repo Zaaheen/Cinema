@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom'
 import { MainLayout } from '../layouts/MainLayout'
 import { AccountPage } from '../pages/AccountPage'
 import { AdminDashboardPage } from '../pages/AdminDashboardPage'
+import { AdminCreateMoviePage } from '../pages/AdminCreateMoviePage'
 import { EmployeeDashboardPage } from '../pages/EmployeeDashboardPage'
 import { HomePage } from '../pages/HomePage'
 import { LoginPage } from '../pages/LoginPage'
@@ -37,6 +38,8 @@ export function AppRoutes() {
         </Route>
         <Route element={<ProtectedRoute roles={['ADMIN']} />}>
           <Route path="admin" element={<AdminDashboardPage />} />
+          <Route path="admin/movies/add" element={<AdminCreateMoviePage />} />
+          <Route path="admin/movies/:movieId/edit" element={<AdminCreateMoviePage />} />
         </Route>
         <Route element={<ProtectedRoute roles={['EMPLOYEE']} />}>
           <Route path="employee" element={<EmployeeDashboardPage />} />
