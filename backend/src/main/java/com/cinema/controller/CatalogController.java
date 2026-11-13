@@ -11,7 +11,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import com.cinema.dto.catalog.ShowtimeResponse;
+import java.time.LocalDate;
 import java.util.List;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,4 +47,18 @@ public class CatalogController {
 
     @GetMapping("/ticket-prices") @Operation(summary = "Giá vé đang áp dụng")
     public ApiResponse<List<TicketPriceResponse>> ticketPrices() { return ApiResponse.ok(catalogService.ticketPrices()); }
+
+    @GetMapping("/movies/{movieId}/showtimes")
+    @Operation(summary = "Xem lịch chiếu của phim theo ngày")
+    public ApiResponse<List<ShowtimeResponse>> showtimes(
+            @PathVariable Long movieId,
+
+            @RequestParam
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate date
+    ) {
+        return ApiResponse.ok(
+                catalogService.showtimes(movieId, date)
+        );
+    }
 }

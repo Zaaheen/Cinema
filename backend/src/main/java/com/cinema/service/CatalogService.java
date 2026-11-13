@@ -5,6 +5,8 @@ import com.cinema.dto.catalog.MovieDetailResponse;
 import com.cinema.dto.catalog.MovieSummaryResponse;
 import com.cinema.dto.catalog.PromotionResponse;
 import com.cinema.dto.catalog.TicketPriceResponse;
+import com.cinema.dto.catalog.ShowtimeResponse;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface CatalogService {
@@ -12,4 +14,5 @@ public interface CatalogService {
     MovieDetailResponse movie(Long movieId);
     List<PromotionResponse> promotions();
     List<TicketPriceResponse> ticketPrices();
+    List<ShowtimeResponse> showtimes(Long movieId, LocalDate date);
 }
