@@ -20,6 +20,25 @@ export async function fetchTicketPrices() {
   return data.data
 }
 
+export async function createMovie(movie) {
+  const { data } = await apiClient.post('/admin/movies', movie)
+  return data.data
+}
+
+export async function updateMovie(movieId, movie) {
+  const { data } = await apiClient.patch(`/admin/movies/${movieId}`, movie)
+  return data.data
+}
+
+export async function uploadMoviePoster(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  const { data } = await apiClient.post('/admin/movies/poster', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return data.data
+}
+
 export async function fetchShowtimes(movieId, date) {
   const { data } = await apiClient.get(
       `/movies/${movieId}/showtimes`,
@@ -30,4 +49,3 @@ export async function fetchShowtimes(movieId, date) {
 
   return data.data
 }
-

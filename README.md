@@ -99,6 +99,9 @@ Backend (`backend/.env.example`):
 | `SPRING_DATASOURCE_PASSWORD` | Database password của Supabase |
 | `JWT_SECRET` | Khóa HS256, tối thiểu 32 byte |
 | `CORS_ALLOWED_ORIGINS` | Danh sách origin frontend, phân tách bằng dấu phẩy |
+| `CLOUDINARY_CLOUD_NAME` | Cloud name trong Cloudinary Dashboard |
+| `CLOUDINARY_API_KEY` | API key trong Cloudinary Dashboard |
+| `CLOUDINARY_API_SECRET` | API secret trong Cloudinary Dashboard; giữ bí mật |
 | `PORT` | Cổng backend khi deploy (mặc định 8080) |
 
 Frontend (`frontend/.env.example`):

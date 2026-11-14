@@ -40,6 +40,9 @@ Mục tiêu: URL truy cập ổn định khi laptop tắt, chi phí thấp cho �
   - `SPRING_DATASOURCE_PASSWORD` (secret)
   - `JWT_SECRET` (secret, nếu dùng JWT)
   - `CORS_ALLOWED_ORIGINS`
+  - `CLOUDINARY_CLOUD_NAME`
+  - `CLOUDINARY_API_KEY` (secret)
+  - `CLOUDINARY_API_SECRET` (secret)
 - Chạy migration Flyway theo quy trình kiểm soát trước/đúng lúc deploy; không để nhiều revision đồng thời tự chạy migration không kiểm soát.
 - Cấu hình health/readiness endpoint; kiểm tra startup timeout, memory và CPU.
 - Cloud Run có thể scale-to-zero tùy cấu hình, nên request đầu có thể cold start. Cần kiểm tra giá và hạn mức hiện hành trước khi công khai demo.
