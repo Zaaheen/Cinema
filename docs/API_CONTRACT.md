@@ -57,6 +57,8 @@
 
 **Hành vi catalog đã triển khai:** `GET /movies` trả `PageResponse` với `content`, `page`, `size`, `totalElements`, `totalPages`; chỉ công bố `NOW_SHOWING`/`COMING_SOON`, `q` tìm không phân biệt hoa/thường theo tiêu đề và `status` chỉ lọc trong hai trạng thái công khai đó. Chi tiết phim không tồn tại trả `404`. `GET /promotions` chỉ trả promotion có `status=ACTIVE` trong khoảng thời gian hiệu lực hiện tại. `GET /ticket-prices` chỉ trả bảng giá có hiệu lực trong ngày hiện tại; API chỉ công bố giá, không tự suy diễn quy tắc tính giá/khuyến mãi khi đặt vé.
 
+**Quy tắc lịch chiếu — APPROVED:** `GET /movies/{movieId}/showtimes?date=YYYY-MM-DD` dùng múi giờ nghiệp vụ `Asia/Ho_Chi_Minh` và chỉ công bố movie có trạng thái `NOW_SHOWING` hoặc `COMING_SOON`; movie không tồn tại hoặc không công khai trả `404`. Ngày đã qua trả danh sách rỗng. Với hôm nay và ngày tương lai, API chỉ trả showtime có `status=SCHEDULED` còn mở bán online; một suất còn mở bán khi `now < startsAt - 30 phút`. Không giới hạn cứng thời gian mở lịch: ngày chưa có lịch chiếu trả danh sách rỗng. Mỗi phần tử trả `id`, `startsAt`, `endsAt`, `roomName`, `status`.
+
 ## 4. Đặt vé và thanh toán
 | Method | Endpoint | Quyền | Mục đích |
 |---|---|---|---|
@@ -67,7 +69,7 @@
 | GET | `/bookings/{bookingId}/tickets` | Chủ đơn hoặc EMPLOYEE/ADMIN | Xem vé phát hành |
 | POST | `/bookings/{bookingId}/payments` | Chủ đơn/EMPLOYEE | Ghi nhận kết quả thanh toán mô phỏng |
 
-**Quy tắc đã chốt:** giữ ghế 5 phút; thanh toán mô phỏng; chỉ cộng điểm sau khi thanh toán thành công; backend/database chống đặt trùng ghế theo suất chiếu. Khi hết hạn giữ ghế mà chưa thanh toán thành công, đơn hết hạn và ghế được giải phóng.
+**Quy tắc đã chốt:** giữ ghế 5 phút; thanh toán mô phỏng; chỉ cộng điểm sau khi thanh toán thành công; backend/database chống đặt trùng ghế theo suất chiếu. Khi hết hạn giữ ghế mà chưa thanh toán thành công, đơn hết hạn và ghế được giải phóng. Backend phải kiểm tra lại điều kiện mở bán online trong transaction khi tạo booking/giữ ghế: showtime phải là `SCHEDULED` và phải còn hơn 30 phút trước `startsAt`; thời gian giữ ghế 5 phút không được vượt quá thời điểm đóng bán.
 
 **TBD trước khi implement:** request schema, idempotency key, chi tiết state machine, tỷ lệ cộng/đổi điểm, thời hạn hủy cụ thể và chính sách hoàn tiền/hoàn điểm. Không triển khai hoàn tiền thật hoặc tự đặt ra thời hạn hủy.
 
@@ -92,8 +94,8 @@ Backend phải tự xác thực giá, khuyến mãi, điểm và tình trạng g
 | PATCH | `/admin/rooms/{id}/seats` | Admin/Manager | Cập nhật sơ đồ/loại ghế |
 | GET/POST | `/admin/showtimes` | Role được duyệt | Danh sách/tạo suất chiếu |
 | PATCH/DELETE | `/admin/showtimes/{id}` | Role được duyệt | Sửa/ngừng suất chiếu |
-| GET/POST | `/admin/promotions` | Role được duyệt | Danh sách/tạo khuyến mãi |
-| PATCH/DELETE | `/admin/promotions/{id}` | Role được duyệt | Sửa/ngừng khuyến mãi |
+| GET/POST | `/admin/promotions` | ADMIN | Danh sách/tạo khuyến mãi |
+| GET/PATCH | `/admin/promotions/{id}` | ADMIN | Xem chi tiết/cập nhật khuyến mãi |
 | GET | `/staff/members?q=` | EMPLOYEE/Admin | Tra cứu thành viên |
 | GET | `/staff/bookings?q=&status=&page=&size=` | EMPLOYEE/Admin | Tra cứu đơn đặt |
 | POST | `/staff/sales` | EMPLOYEE/Admin | Bán vé tại quầy |
@@ -108,6 +110,8 @@ Backend phải tự xác thực giá, khuyến mãi, điểm và tình trạng g
 **Chỉnh sửa phim — IMPLEMENTED:** `PATCH /admin/movies/{id}` nhận cùng các trường chi tiết như API tạo phim và trả `200 OK` với `MovieDetailResponse`. Form gửi đầy đủ bộ trường có thể chỉnh sửa; `title`, `durationMinutes`, `version` bắt buộc. Phim không tồn tại trả `404`; validation trả `400`. Khi sửa phim cũ, thể loại hiện tại được giữ nguyên nếu không đổi; thể loại mới chọn phải thuộc danh sách cho phép. `status` không nhận từ request và được giữ nguyên cho tới khi nhóm duyệt quy tắc đổi trạng thái. Endpoint yêu cầu role `ADMIN` theo cấu hình hiện tại.
 
 **Tải poster — IMPLEMENTED:** `POST /admin/movies/poster` nhận `multipart/form-data` với field `file`, chỉ role `ADMIN`; chấp nhận ảnh PNG tối đa 5 MB. Backend ký request bằng `CLOUDINARY_API_KEY` và `CLOUDINARY_API_SECRET`, gửi ảnh tới Cloudinary và trả `201 Created` với `data.posterUrl` là HTTPS URL. Thiếu cấu hình trả `503`; tệp không hợp lệ, thiếu field hoặc quá dung lượng trả `400`; sai Content-Type trả `415`; Cloudinary không khả dụng trả `502`. Cần thiết lập `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` trong `backend/.env` từ Cloudinary Dashboard; không đưa các giá trị thật vào Git.
+
+**Quản trị khuyến mãi — APPROVED:** chỉ `ADMIN` được gọi các endpoint trên. Request tạo/cập nhật nhận `title`, `description` (nullable), `discountType` (`PERCENT` hoặc `FIXED`), `discountValue`, `startsAt`, `endsAt`, `status` (nullable; khi tạo mặc định `ACTIVE`). `discountValue` phải lớn hơn 0; nếu `discountType=PERCENT` thì không được vượt 100; `endsAt` phải sau `startsAt`. Response trả `id`, các trường request và `status`. Tạo mới trả `201`; đọc/cập nhật thành công trả `200`; request không hợp lệ trả `400`; ID không tồn tại trả `404`. Không có endpoint xóa cứng khuyến mãi.
 
 ## 6. Quy tắc backend
 - Validate request bằng Bean Validation và kiểm tra nghiệp vụ ở Service.

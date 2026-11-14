@@ -38,3 +38,14 @@ export async function uploadMoviePoster(file) {
   })
   return data.data
 }
+
+export async function fetchShowtimes(movieId, date) {
+  const { data } = await apiClient.get(
+      `/movies/${movieId}/showtimes`,
+      {
+        params: { date },
+      },
+  )
+
+  return data.data
+}
