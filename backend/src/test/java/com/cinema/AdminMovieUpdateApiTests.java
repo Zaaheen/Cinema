@@ -7,10 +7,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.cinema.entity.Movie;
+import com.cinema.entity.Genre;
 import com.cinema.entity.Role;
 import com.cinema.entity.User;
 import com.cinema.entity.UserStatus;
 import com.cinema.repository.MovieRepository;
+import com.cinema.repository.GenreRepository;
+import com.cinema.repository.ShowtimeRepository;
 import com.cinema.repository.RoleRepository;
 import com.cinema.repository.UserRepository;
 import com.cinema.security.JwtService;
@@ -18,6 +21,9 @@ import java.time.LocalDate;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.util.UUID;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,18 +44,27 @@ class AdminMovieUpdateApiTests {
     @Autowired private WebApplicationContext context;
     @Autowired private FilterChainProxy springSecurityFilterChain;
     @Autowired private MovieRepository movieRepository;
+    @Autowired private GenreRepository genreRepository;
+    @Autowired private ShowtimeRepository showtimeRepository;
     @Autowired private RoleRepository roleRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private JwtService jwtService;
 
     private MockMvc mockMvc;
+    private Map<String, Long> genreIds;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context)
                 .addFilters(springSecurityFilterChain)
                 .build();
+        showtimeRepository.deleteAll();
         movieRepository.deleteAll();
+        genreRepository.deleteAll();
+        genreIds = genreRepository.saveAll(List.of(
+                genre("Hành động"), genre("Hài kịch"), genre("Kinh dị"),
+                genre("Khoa học viễn tưởng"), genre("Tình cảm"), genre("Phiêu lưu")))
+                .stream().collect(Collectors.toMap(Genre::getName, Genre::getId));
     }
 
     @Test
@@ -66,7 +81,7 @@ class AdminMovieUpdateApiTests {
         String request = """
                 {
                   "title": "Tên phim mới",
-                  "genre": "Kinh dị",
+                  "genreIds": [%d, %d],
                   "releaseDate": "2026-12-01",
                   "durationMinutes": 125,
                   "version": "IMAX",
@@ -77,7 +92,7 @@ class AdminMovieUpdateApiTests {
                   "trailerUrl": "https://example.com/trailer",
                   "posterUrl": "https://example.com/poster.png"
                 }
-                """;
+                """.formatted(genreIds.get("Kinh dị"), genreIds.get("Phiêu lưu"));
 
         mockMvc.perform(patch("/api/v1/admin/movies/{movieId}", movie.getId())
                         .header("Authorization", "Bearer " + token)
@@ -85,7 +100,8 @@ class AdminMovieUpdateApiTests {
                         .content(request))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.title").value("Tên phim mới"))
-                .andExpect(jsonPath("$.data.genre").value("Kinh dị"))
+                .andExpect(jsonPath("$.data.genre").value("Kinh dị, Phiêu lưu"))
+                .andExpect(jsonPath("$.data.genres.length()").value(2))
                 .andExpect(jsonPath("$.data.durationMinutes").value(125))
                 .andExpect(jsonPath("$.data.status").value("STOPPED"));
 
@@ -100,12 +116,12 @@ class AdminMovieUpdateApiTests {
         String request = """
                 {
                   "title": "Phim tạo mới",
-                  "genre": "Hành động",
+                  "genreIds": [%d],
                   "durationMinutes": 110,
                   "version": "2D",
                   "posterUrl": "https://res.cloudinary.com/demo/image/upload/cinema/posters/poster.png"
                 }
-                """;
+                """.formatted(genreIds.get("Hành động"));
 
         mockMvc.perform(post("/api/v1/admin/movies")
                         .header("Authorization", "Bearer " + token)
@@ -145,10 +161,11 @@ class AdminMovieUpdateApiTests {
     }
 
     @Test
-    void adminCanSaveMovieWithoutChangingLegacyGenre() throws Exception {
+    void adminCanUpdateMovieWithMultipleGenres() throws Exception {
         Movie movie = new Movie();
         movie.setTitle("Phim có thể loại cũ");
-        movie.setGenre("Drama");
+        movie.setGenres(new java.util.LinkedHashSet<>(List.of(
+                genreRepository.findById(genreIds.get("Hành động")).orElseThrow())));
         movie.setDurationMinutes(90);
         movie.setVersion("2D");
         movie.setStatus("COMING_SOON");
@@ -158,18 +175,18 @@ class AdminMovieUpdateApiTests {
         String request = """
                 {
                   "title": "Phim đã cập nhật",
-                  "genre": "Drama",
+                  "genreIds": [%d, %d],
                   "durationMinutes": 95,
                   "version": "2D"
                 }
-                """;
+                """.formatted(genreIds.get("Hài kịch"), genreIds.get("Phiêu lưu"));
 
         mockMvc.perform(patch("/api/v1/admin/movies/{movieId}", movie.getId())
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(request))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.genre").value("Drama"));
+                .andExpect(jsonPath("$.data.genre").value("Hài kịch, Phiêu lưu"));
     }
 
     @Test
@@ -243,5 +260,11 @@ class AdminMovieUpdateApiTests {
         user.setRole(role);
         user = userRepository.saveAndFlush(user);
         return jwtService.generateAccessToken(user);
+    }
+
+    private Genre genre(String name) {
+        Genre genre = new Genre();
+        genre.setName(name);
+        return genre;
     }
 }

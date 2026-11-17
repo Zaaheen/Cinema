@@ -1,20 +1,21 @@
 package com.cinema.dto.catalog;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.List;
 
 public record CreateMovieRequest(
         @NotBlank(message = "Tên phim không được để trống")
         @Size(max = 255, message = "Tên phim tối đa 255 ký tự")
         String title,
 
-        @Pattern(
-                regexp = "^(Hành động|Hài kịch|Kinh dị|Khoa học viễn tưởng|Tình cảm)?$",
-                message = "Thể loại không nằm trong danh sách cho phép")
-        String genre,
+        @Size(max = 6, message = "Phim không thể có quá 6 thể loại")
+        List<@NotNull @Positive Long> genreIds,
 
         LocalDate releaseDate,
 
@@ -42,5 +43,8 @@ public record CreateMovieRequest(
         @Pattern(
                 regexp = "^$|^https?://.+\\.png([?#].*)?$",
                 message = "Poster phải là URL ảnh PNG kết thúc bằng .png")
-        String posterUrl
+        String posterUrl,
+
+        @Size(max = 100, message = "Không thể tạo quá 100 suất trong một lần")
+        List<@NotNull @Valid ShowtimeSlotRequest> showtimes
 ) {}

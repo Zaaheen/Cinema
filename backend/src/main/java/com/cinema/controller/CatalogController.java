@@ -4,6 +4,7 @@ import com.cinema.common.ApiResponse;
 import com.cinema.common.PageResponse;
 import com.cinema.dto.catalog.MovieDetailResponse;
 import com.cinema.dto.catalog.MovieSummaryResponse;
+import com.cinema.dto.catalog.GenreResponse;
 import com.cinema.dto.catalog.PromotionResponse;
 import com.cinema.dto.catalog.TicketPriceResponse;
 import com.cinema.service.CatalogService;
@@ -42,6 +43,9 @@ public class CatalogController {
     @GetMapping("/movies/{movieId}") @Operation(summary = "Chi tiết phim")
     public ApiResponse<MovieDetailResponse> movie(@PathVariable Long movieId) { return ApiResponse.ok(catalogService.movie(movieId)); }
 
+    @GetMapping("/genres") @Operation(summary = "Danh sách thể loại phim")
+    public ApiResponse<List<GenreResponse>> genres() { return ApiResponse.ok(catalogService.genres()); }
+
     @GetMapping("/promotions") @Operation(summary = "Khuyến mãi đang công bố")
     public ApiResponse<List<PromotionResponse>> promotions() { return ApiResponse.ok(catalogService.promotions()); }
 
@@ -62,4 +66,4 @@ public class CatalogController {
         );
     }
 }
-    
+

@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { createMovie, fetchMovie, updateMovie, uploadMoviePoster } from '../api/catalog'
+import { createMovie, fetchGenres, fetchMovie, updateMovie, uploadMoviePoster } from '../api/catalog'
 import { getErrorMessage } from '../lib/errors'
+import { MovieScheduleEditor } from './MovieScheduleEditor'
 
 const initialForm = {
   title: '',
-  genre: '',
+  genreIds: [],
   releaseDate: '',
   durationMinutes: '',
   version: '2D',
@@ -17,16 +18,12 @@ const initialForm = {
   posterUrl: '',
 }
 
-const genres = [
-  'Hành động',
-  'Hài kịch',
-  'Kinh dị',
-  'Khoa học viễn tưởng',
-  'Tình cảm',
-]
-
 export function AdminCreateMoviePage() {
   const [form, setForm] = useState(initialForm)
+  const [genres, setGenres] = useState([])
+  const [legacyGenres, setLegacyGenres] = useState([])
+  const [genreError, setGenreError] = useState('')
+  const [initialShowtimes, setInitialShowtimes] = useState([])
   const [error, setError] = useState('')
   const [loadError, setLoadError] = useState('')
   const [posterPreviewError, setPosterPreviewError] = useState(false)
@@ -34,10 +31,19 @@ export function AdminCreateMoviePage() {
   const [posterPreviewUrl, setPosterPreviewUrl] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [isLoadingMovie, setIsLoadingMovie] = useState(false)
+  const [savedDurationMinutes, setSavedDurationMinutes] = useState(null)
   const navigate = useNavigate()
   const { movieId } = useParams()
   const isEditing = Boolean(movieId)
   const posterPreviewRef = useRef(null)
+
+  useEffect(() => {
+    let active = true
+    fetchGenres()
+      .then((data) => { if (active) setGenres(data) })
+      .catch((requestError) => { if (active) setGenreError(getErrorMessage(requestError)) })
+    return () => { active = false }
+  }, [])
 
   useEffect(() => () => {
     if (posterPreviewRef.current) URL.revokeObjectURL(posterPreviewRef.current)
@@ -60,7 +66,7 @@ export function AdminCreateMoviePage() {
         setPosterPreviewUrl('')
         setForm({
           title: movie.title ?? '',
-          genre: movie.genre ?? '',
+          genreIds: movie.genres?.map((genre) => genre.id) ?? [],
           releaseDate: movie.releaseDate ?? '',
           durationMinutes: movie.durationMinutes ?? '',
           version: movie.version ?? '2D',
@@ -71,6 +77,8 @@ export function AdminCreateMoviePage() {
           trailerUrl: movie.trailerUrl ?? '',
           posterUrl: movie.posterUrl ?? '',
         })
+        setSavedDurationMinutes(movie.durationMinutes ?? null)
+        setLegacyGenres(movie.genres?.filter((genre) => !genre.selectable) ?? [])
       })
       .catch((requestError) => {
         if (active) setLoadError(getErrorMessage(requestError))
@@ -117,10 +125,11 @@ export function AdminCreateMoviePage() {
         : form.posterUrl
       const movieRequest = {
         ...form,
-        genre: form.genre || null,
+        genreIds: form.genreIds.map(Number),
         releaseDate: form.releaseDate || null,
         durationMinutes: Number(form.durationMinutes),
         posterUrl,
+        ...(!isEditing ? { showtimes: initialShowtimes } : {}),
       }
       if (isEditing) {
         await updateMovie(movieId, movieRequest)
@@ -179,16 +188,36 @@ export function AdminCreateMoviePage() {
               />
             </label>
 
-            <label className="admin-movie-field">
-              <span>Thể loại</span>
-              <select name="genre" value={form.genre} onChange={updateField}>
-                <option value="">Chọn thể loại</option>
-                {form.genre && !genres.includes(form.genre) ? (
-                  <option value={form.genre}>{form.genre} (đang lưu)</option>
-                ) : null}
-                {genres.map((genre) => <option key={genre} value={genre}>{genre}</option>)}
-              </select>
-            </label>
+            <fieldset className="admin-movie-field admin-movie-field-wide genre-picker">
+              <legend>Thể loại</legend>
+              <div className="genre-chip-list">
+                {[...genres, ...legacyGenres.filter((genre) => form.genreIds.includes(genre.id))].map((genre) => {
+                  const selected = form.genreIds.includes(genre.id)
+                  return (
+                    <button
+                      className={selected ? 'genre-chip is-selected' : 'genre-chip'}
+                      type="button"
+                      key={genre.id}
+                      aria-pressed={selected}
+                      onClick={() => setForm((current) => ({
+                        ...current,
+                        genreIds: selected
+                          ? current.genreIds.filter((id) => id !== genre.id)
+                          : [...current.genreIds, genre.id],
+                      }))}
+                    >
+                      {selected ? '✓ ' : '+ '}{genre.name}
+                    </button>
+                  )
+                })}
+              </div>
+              {genreError ? <small className="form-error">Không tải được danh sách thể loại: {genreError}</small> : null}
+              <small>
+                {form.genreIds.length
+                  ? `Đã chọn: ${genres.filter((genre) => form.genreIds.includes(genre.id)).map((genre) => genre.name).join(', ')}`
+                  : 'Có thể chọn nhiều thể loại.'}
+              </small>
+            </fieldset>
 
             <label className="admin-movie-field">
               <span>Ngày khởi chiếu</span>
@@ -311,18 +340,28 @@ export function AdminCreateMoviePage() {
             </div>
 
             <label className="admin-movie-field admin-movie-field-wide">
-              <span>Trailer URL</span>
-              <input
-                type="url"
+              <span>URL hoặc mã nhúng trailer YouTube</span>
+              <textarea
                 name="trailerUrl"
                 value={form.trailerUrl}
                 onChange={updateField}
                 maxLength={500}
-                placeholder="https://example.com/trailer"
+                rows="3"
+                placeholder='<iframe src="https://www.youtube.com/embed/VIDEO_ID" ...></iframe>'
               />
+              <small>Dán URL YouTube hoặc toàn bộ mã iframe. Trailer sẽ mở ngay trên trang phim.</small>
             </label>
           </div>
         </section>
+
+        <MovieScheduleEditor
+          durationMinutes={form.durationMinutes}
+          movieId={movieId}
+          durationHasUnsavedChanges={isEditing
+            && savedDurationMinutes !== null
+            && Number(form.durationMinutes) !== Number(savedDurationMinutes)}
+          onInitialSchedulesChange={setInitialShowtimes}
+        />
 
         {error && <p className="form-error admin-movie-error" role="alert">{error}</p>}
 

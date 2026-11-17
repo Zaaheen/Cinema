@@ -50,6 +50,7 @@
 |---|---|---|---|
 | GET | `/movies?status=&q=&page=&size=` | Public | Danh sách/tìm kiếm phim |
 | GET | `/movies/{movieId}` | Public | Chi tiết phim |
+| GET | `/genres` | Public | Danh mục thể loại phim |
 | GET | `/movies/{movieId}/showtimes?date=` | Public | Suất chiếu theo phim/ngày |
 | GET | `/showtimes/{showtimeId}/seats` | Public | Sơ đồ ghế và tình trạng ghế |
 | GET | `/promotions?active=true` | Public | Khuyến mãi công khai |
@@ -90,10 +91,11 @@ Backend phải tự xác thực giá, khuyến mãi, điểm và tình trạng g
 | GET/POST | `/admin/movies` | ADMIN | Danh sách/tạo phim |
 | GET/PATCH/DELETE | `/admin/movies/{id}` | ADMIN | Xem/sửa/ngừng phim |
 | POST | `/admin/movies/poster` | ADMIN | Tải poster PNG lên Cloudinary, trả URL ảnh |
-| GET/POST | `/admin/rooms` | Admin/Manager | Danh sách/tạo phòng |
+| GET | `/admin/rooms` | ADMIN | Danh sách phòng đang hoạt động |
 | PATCH | `/admin/rooms/{id}/seats` | Admin/Manager | Cập nhật sơ đồ/loại ghế |
-| GET/POST | `/admin/showtimes` | Role được duyệt | Danh sách/tạo suất chiếu |
-| PATCH/DELETE | `/admin/showtimes/{id}` | Role được duyệt | Sửa/ngừng suất chiếu |
+| GET | `/admin/showtimes?date=` | ADMIN | Lịch chiếu mọi phòng theo ngày |
+| POST | `/admin/showtimes` | ADMIN | Tạo nhiều suất cho một phim theo giao dịch |
+| PATCH/DELETE | `/admin/showtimes/{id}` | ADMIN | Sửa/hủy mềm suất chiếu chưa có booking |
 | GET/POST | `/admin/promotions` | ADMIN | Danh sách/tạo khuyến mãi |
 | GET/PATCH | `/admin/promotions/{id}` | ADMIN | Xem chi tiết/cập nhật khuyến mãi |
 | GET | `/staff/members?q=` | EMPLOYEE/Admin | Tra cứu thành viên |
@@ -105,9 +107,15 @@ Backend phải tự xác thực giá, khuyến mãi, điểm và tình trạng g
 
 **Lưu ý:** các route quản trị ở đây là bản nháp; phân quyền và CRUD cụ thể phải theo SRS đã được nhóm thống nhất.
 
-**Tạo phim — IMPLEMENTED:** `POST /admin/movies` nhận JSON gồm `title`, `genre`, `releaseDate`, `durationMinutes`, `version`, `castText`, `director`, `studio`, `synopsis`, `trailerUrl`, `posterUrl`; trả `201 Created` với `MovieDetailResponse` trong `ApiResponse`. `title`, `durationMinutes`, `version` bắt buộc; `durationMinutes` phải lớn hơn 0. `genre` nếu có chỉ nhận một trong `Hành động`, `Hài kịch`, `Kinh dị`, `Khoa học viễn tưởng`, `Tình cảm`. `posterUrl` nếu có phải là HTTP(S) URL kết thúc bằng `.png`. Endpoint hiện được `SecurityConfig` giới hạn cho `ADMIN`; quyền nghiệp vụ cuối cùng vẫn cần nhóm xác nhận theo phần quyết định còn mở ở `docs/REQUIREMENTS_MAPPING.md`.
+**Danh mục thể loại — APPROVED:** danh sách chọn mới gồm `Hành động`, `Hài kịch`, `Kinh dị`, `Khoa học viễn tưởng`, `Tình cảm`, `Phiêu lưu`. `GET /genres` trả `id`, `name`, `selectable` cho các thể loại được chọn. Migration giữ thể loại cũ không thuộc danh sách ở dạng không selectable để bảo toàn dữ liệu; chúng không xuất hiện trong danh sách chọn mới. Phim lưu quan hệ nhiều-nhiều qua `movie_genres`; không ghép nhiều thể loại thành chuỗi trong database.
 
-**Chỉnh sửa phim — IMPLEMENTED:** `PATCH /admin/movies/{id}` nhận cùng các trường chi tiết như API tạo phim và trả `200 OK` với `MovieDetailResponse`. Form gửi đầy đủ bộ trường có thể chỉnh sửa; `title`, `durationMinutes`, `version` bắt buộc. Phim không tồn tại trả `404`; validation trả `400`. Khi sửa phim cũ, thể loại hiện tại được giữ nguyên nếu không đổi; thể loại mới chọn phải thuộc danh sách cho phép. `status` không nhận từ request và được giữ nguyên cho tới khi nhóm duyệt quy tắc đổi trạng thái. Endpoint yêu cầu role `ADMIN` theo cấu hình hiện tại.
+**Tạo phim — IMPLEMENTED:** `POST /admin/movies` nhận `title`, `genreIds` (mảng ID, có thể rỗng), `releaseDate`, `durationMinutes`, `version`, `castText`, `director`, `studio`, `synopsis`, `trailerUrl`, `posterUrl` và `showtimes` tùy chọn (`[{roomId, startsAt}]`). Phản hồi `201 Created` có `genre` là chuỗi hiển thị tương thích và `genres` là mảng `{id,name,selectable}`. Phim, liên kết thể loại và các suất ban đầu được ghi trong cùng giao dịch; nếu có thể loại/phòng không hợp lệ hoặc xung đột lịch, toàn bộ request rollback và trả lỗi phù hợp. `title`, `durationMinutes`, `version` bắt buộc; `durationMinutes` phải lớn hơn 0. `posterUrl` nếu có phải là HTTP(S) URL kết thúc bằng `.png`. Endpoint chỉ dành cho `ADMIN` theo cấu hình hiện tại.
+
+**Trailer — IMPLEMENTED:** Trường `trailerUrl` có thể nhận URL YouTube hoặc mã nhúng iframe YouTube (tối đa 500 ký tự). Trang chi tiết chỉ trích xuất video ID từ host YouTube được cho phép rồi phát trong iframe privacy-enhanced ngay trên trang; nút đóng, nhấn nền tối hoặc phím `Esc` sẽ đóng hộp thoại và dừng phát. Mã iframe không được render trực tiếp.
+
+**Chỉnh sửa phim — IMPLEMENTED:** `PATCH /admin/movies/{id}` nhận các trường chi tiết và `genreIds`, trả `200 OK` với `MovieDetailResponse`. Phim không tồn tại trả `404`; validation trả `400`. Khi đổi thời lượng, các suất `SCHEDULED` trong tương lai được tính lại `ends_at`; nếu suất có booking/vé hoặc tạo xung đột phòng, cập nhật phim bị chặn và rollback. `status` không nhận từ request và được giữ nguyên. Endpoint yêu cầu role `ADMIN`.
+
+**Quản lý lịch chiếu — IMPLEMENTED:** `GET /admin/showtimes?date=YYYY-MM-DD` trả suất trong ngày ở mọi phòng; phần tử gồm movie/room, `startsAt`, `endsAt`, `durationMinutes`, `status`, `hasBookings`. `POST /admin/showtimes` nhận `{movieId, showtimes:[{roomId, startsAt}]}` và tạo cả batch nguyên tử; `PATCH /admin/showtimes/{id}` nhận `{roomId, startsAt}`; `DELETE /admin/showtimes/{id}` chuyển suất sang `CANCELLED` và trả `204`, không xóa lịch sử. Mỗi suất có `endsAt = startsAt + durationMinutes`; thời gian lưu là instant và ngày/giờ nghiệp vụ dùng `Asia/Ho_Chi_Minh`. Giờ bắt đầu theo bước 15 phút trong khung 08:00–23:00; suất phải kết thúc không muộn hơn 23:00 cùng ngày. Giữa hai suất cùng phòng cần tối thiểu 15 phút. Service khóa hàng phòng khi ghi lịch; PostgreSQL có exclusion constraint để chặn trùng lịch đồng thời. `409 Conflict` nếu xung đột lịch, phim/phòng đã được đặt khiến không thể sửa/hủy, hoặc đổi thời lượng làm phát sinh xung đột. Suất có booking/vé không được sửa hoặc hủy; suất chưa có booking được hủy mềm bằng trạng thái `CANCELLED`. Khi triển khai V6, migration tự hủy mềm các suất `SCHEDULED`/`ONGOING` bị trùng hoàn toàn cùng phim/phòng/giờ nếu suất có ID lớn hơn và chưa có booking; các xung đột khác khiến migration dừng để không tự thay đổi dữ liệu nghiệp vụ.
 
 **Tải poster — IMPLEMENTED:** `POST /admin/movies/poster` nhận `multipart/form-data` với field `file`, chỉ role `ADMIN`; chấp nhận ảnh PNG tối đa 5 MB. Backend ký request bằng `CLOUDINARY_API_KEY` và `CLOUDINARY_API_SECRET`, gửi ảnh tới Cloudinary và trả `201 Created` với `data.posterUrl` là HTTPS URL. Thiếu cấu hình trả `503`; tệp không hợp lệ, thiếu field hoặc quá dung lượng trả `400`; sai Content-Type trả `415`; Cloudinary không khả dụng trả `502`. Cần thiết lập `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` trong `backend/.env` từ Cloudinary Dashboard; không đưa các giá trị thật vào Git.
 

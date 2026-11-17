@@ -39,6 +39,7 @@ public class SecurityConfig {
 
     private static final List<String> PUBLIC_GET_ENDPOINTS = List.of(
             "/api/v1/movies/**",
+            "/api/v1/genres",
             "/api/v1/showtimes/**",
             "/api/v1/promotions/**",
             "/api/v1/ticket-prices/**");

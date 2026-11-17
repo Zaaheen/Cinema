@@ -10,7 +10,9 @@
 | `roles` | `id`, `code`, `name` | Vai trò: khách thành viên, nhân viên, quản lý/Admin; cách mô hình khách chưa đăng nhập cần thiết kế riêng |
 | `members` | `id`, `user_id`, `member_code`, `birth_date`, `gender`, `address`, `identity_number` | Hồ sơ thành viên và thông tin tài khoản theo SRS |
 | `point_transactions` | `id`, `member_id`, `booking_id` nullable, `type`, `points_delta`, `description`, `created_at` | Sổ giao dịch cộng/sử dụng điểm; không chỉ lưu mỗi tổng điểm |
-| `movies` | `id`, `title`, `genre`, `release_date`, `duration_minutes`, `version`, `cast_text`, `director`, `studio`, `synopsis`, `trailer_url`, `poster_url`, `status` | Danh mục phim và chi tiết phim |
+| `movies` | `id`, `title`, `release_date`, `duration_minutes`, `version`, `cast_text`, `director`, `studio`, `synopsis`, `trailer_url`, `poster_url`, `status` | Danh mục phim và chi tiết phim |
+| `genres` | `id`, `name`, `is_selectable` | Danh mục thể loại; giữ thể loại lịch sử ngoài danh sách chọn hiện tại |
+| `movie_genres` | `movie_id`, `genre_id` | Quan hệ nhiều-nhiều giữa phim và thể loại; unique cặp ID |
 | `rooms` | `id`, `name`, `status` | Phòng chiếu |
 | `seats` | `id`, `room_id`, `row_label`, `seat_number`, `seat_type`, `status` | Sơ đồ ghế; unique `(room_id, row_label, seat_number)` |
 | `showtimes` | `id`, `movie_id`, `room_id`, `starts_at`, `ends_at`, `status` | Suất chiếu cụ thể của phim tại phòng |
@@ -28,6 +30,7 @@
 - `users 1—0..1 members` (nhân viên/quản lý có thể không có hồ sơ thành viên)
 - `members 1—N bookings`
 - `members 1—N point_transactions`
+- `movies N—N genres` qua `movie_genres`
 - `movies 1—N showtimes`
 - `rooms 1—N seats` và `rooms 1—N showtimes`
 - `showtimes 1—N bookings`
@@ -46,6 +49,7 @@
 7. Không xóa cứng phim/phòng/khuyến mãi đã có dữ liệu nghiệp vụ liên quan nếu điều đó phá lịch sử; cân nhắc `status`/soft delete.
 8. Mọi tiền tệ dùng kiểu decimal phù hợp, không dùng floating point.
 9. Thời gian lưu thống nhất; API trả ISO-8601 có timezone. Hiển thị theo múi giờ Việt Nam.
+10. Lịch phòng không chồng lấn; giữa hai suất cùng phòng có tối thiểu 15 phút chuẩn bị. `showtimes.ends_at` là giờ kết thúc phim thực tế, không gồm thời gian nghỉ. PostgreSQL exclusion constraint bảo vệ cả trường hợp ghi đồng thời.
 
 ## 5. Quyết định đã chốt và các mục còn mở
 Đã chốt cho bản thiết kế:

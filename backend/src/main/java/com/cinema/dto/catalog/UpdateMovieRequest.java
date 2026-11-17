@@ -1,17 +1,20 @@
 package com.cinema.dto.catalog;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.List;
 
 public record UpdateMovieRequest(
         @NotBlank(message = "Tên phim không được để trống")
         @Size(max = 255, message = "Tên phim tối đa 255 ký tự")
         String title,
 
-        String genre,
+        @Size(max = 6, message = "Phim không thể có quá 6 thể loại")
+        List<@NotNull @Positive Long> genreIds,
 
         LocalDate releaseDate,
 

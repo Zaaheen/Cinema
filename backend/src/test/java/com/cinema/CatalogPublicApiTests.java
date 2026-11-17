@@ -5,14 +5,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.cinema.entity.Movie;
+import com.cinema.entity.Genre;
 import com.cinema.entity.Promotion;
 import com.cinema.entity.SeatPrice;
 import com.cinema.repository.MovieRepository;
+import com.cinema.repository.GenreRepository;
+import com.cinema.repository.ShowtimeRepository;
 import com.cinema.repository.PromotionRepository;
 import com.cinema.repository.SeatPriceRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +33,8 @@ class CatalogPublicApiTests {
     @Autowired private WebApplicationContext context;
     @Autowired private FilterChainProxy springSecurityFilterChain;
     @Autowired private MovieRepository movieRepository;
+    @Autowired private GenreRepository genreRepository;
+    @Autowired private ShowtimeRepository showtimeRepository;
     @Autowired private PromotionRepository promotionRepository;
     @Autowired private SeatPriceRepository seatPriceRepository;
     private MockMvc mockMvc;
@@ -36,16 +42,21 @@ class CatalogPublicApiTests {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).addFilters(springSecurityFilterChain).build();
+        showtimeRepository.deleteAll();
         movieRepository.deleteAll();
         promotionRepository.deleteAll();
         seatPriceRepository.deleteAll();
+        genreRepository.deleteAll();
     }
 
     @Test
     void publicCatalogReturnsSearchableMoviesPublishedPromotionsAndEffectivePrices() throws Exception {
         Movie movie = new Movie();
         movie.setTitle("Dune: Part Two");
-        movie.setGenre("Science fiction");
+        Genre genre = new Genre();
+        genre.setName("Khoa học viễn tưởng");
+        genre = genreRepository.save(genre);
+        movie.setGenres(Set.of(genre));
         movie.setDurationMinutes(166);
         movie.setVersion("IMAX");
         movie.setStatus("NOW_SHOWING");
@@ -118,7 +129,12 @@ class CatalogPublicApiTests {
                 .andExpect(jsonPath("$.data.content[0].title").value("Dune: Part Two"));
         mockMvc.perform(get("/api/v1/movies/{movieId}", movie.getId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.durationMinutes").value(166));
+                .andExpect(jsonPath("$.data.durationMinutes").value(166))
+                .andExpect(jsonPath("$.data.genre").value("Khoa học viễn tưởng"))
+                .andExpect(jsonPath("$.data.genres[0].name").value("Khoa học viễn tưởng"));
+        mockMvc.perform(get("/api/v1/genres"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].name").value("Khoa học viễn tưởng"));
         mockMvc.perform(get("/api/v1/movies/{movieId}", 999999L))
                 .andExpect(status().isNotFound());
         mockMvc.perform(get("/api/v1/promotions"))

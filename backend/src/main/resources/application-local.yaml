@@ -6,6 +6,12 @@ spring:
     hikari:
       maximum-pool-size: ${SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE:3}
       minimum-idle: ${SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE:1}
+  flyway:
+    # The local database has an older, intentionally omitted V4 seed migration.
+    # Keep production validation strict in application-prod.yaml.
+    ignore-migration-patterns:
+      - '*:future'
+      - versioned:missing
   jpa:
     properties:
       hibernate:

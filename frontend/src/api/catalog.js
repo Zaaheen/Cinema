@@ -20,6 +20,11 @@ export async function fetchTicketPrices() {
   return data.data
 }
 
+export async function fetchGenres() {
+  const { data } = await apiClient.get('/genres')
+  return data.data
+}
+
 export async function createMovie(movie) {
   const { data } = await apiClient.post('/admin/movies', movie)
   return data.data
@@ -37,6 +42,30 @@ export async function uploadMoviePoster(file) {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
   return data.data
+}
+
+export async function fetchAdminRooms() {
+  const { data } = await apiClient.get('/admin/rooms')
+  return data.data
+}
+
+export async function fetchAdminShowtimes(date) {
+  const { data } = await apiClient.get('/admin/showtimes', { params: { date } })
+  return data.data
+}
+
+export async function createShowtimes(movieId, showtimes) {
+  const { data } = await apiClient.post('/admin/showtimes', { movieId, showtimes })
+  return data.data
+}
+
+export async function updateShowtime(showtimeId, showtime) {
+  const { data } = await apiClient.patch(`/admin/showtimes/${showtimeId}`, showtime)
+  return data.data
+}
+
+export async function cancelShowtime(showtimeId) {
+  await apiClient.delete(`/admin/showtimes/${showtimeId}`)
 }
 
 export async function fetchShowtimes(movieId, date) {
