@@ -8,9 +8,11 @@ import com.cinema.dto.catalog.MovieSummaryResponse;
 import com.cinema.dto.catalog.PromotionResponse;
 import com.cinema.dto.catalog.ShowtimeResponse;
 import com.cinema.dto.catalog.TicketPriceResponse;
+import com.cinema.dto.catalog.GenreResponse;
 import com.cinema.entity.Movie;
 import com.cinema.exception.BusinessException;
 import com.cinema.repository.MovieRepository;
+import com.cinema.repository.GenreRepository;
 import com.cinema.repository.PromotionRepository;
 import com.cinema.repository.SeatPriceRepository;
 import com.cinema.repository.ShowtimeRepository;
@@ -40,17 +42,26 @@ public class CatalogServiceImpl implements CatalogService {
     private final PromotionRepository promotionRepository;
     private final SeatPriceRepository seatPriceRepository;
     private final ShowtimeRepository showtimeRepository;
+    private final GenreRepository genreRepository;
 
     public CatalogServiceImpl(
             MovieRepository movieRepository,
             PromotionRepository promotionRepository,
             SeatPriceRepository seatPriceRepository,
-            ShowtimeRepository showtimeRepository
+            ShowtimeRepository showtimeRepository,
+            GenreRepository genreRepository
     ) {
         this.movieRepository = movieRepository;
         this.promotionRepository = promotionRepository;
         this.seatPriceRepository = seatPriceRepository;
         this.showtimeRepository = showtimeRepository;
+        this.genreRepository = genreRepository;
+    }
+
+    @Override
+    public List<GenreResponse> genres() {
+        return genreRepository.findAllBySelectableTrueOrderByNameAsc().stream()
+                .map(GenreResponse::from).toList();
     }
 
     @Override
