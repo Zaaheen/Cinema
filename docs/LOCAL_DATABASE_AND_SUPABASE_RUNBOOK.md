@@ -69,7 +69,7 @@ Quy tắc `.gitignore` hiện chưa có pattern chuyên biệt cho database dump
 
 ## Seed data
 
-`backend/src/main/resources/db/seed/stitch-development.sql` là manual development seed, không thuộc Flyway và không được chạy khi khởi động thường ngày. Không chạy seed trên dữ liệu hiện có nếu chưa biết đầy đủ tác động và chưa được phê duyệt. Launcher local đặt `SPRING_SQL_INIT_MODE=never`, nhưng điều này không thay thế kiểm tra thủ công.
+`backend/src/main/resources/db/seed/stitch-development.sql` là manual development seed, không thuộc Flyway và không được chạy khi khởi động thường ngày. Không chạy seed trên dữ liệu hiện có nếu chưa biết đầy đủ tác động và chưa được phê duyệt. Checkout này không có local launcher đặt `SPRING_SQL_INIT_MODE=never`; người vận hành phải xác minh cấu hình SQL init thực tế trước khi khởi động.
 
 ## Troubleshooting không ghi dữ liệu
 

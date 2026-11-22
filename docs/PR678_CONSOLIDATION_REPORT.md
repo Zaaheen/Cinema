@@ -1,8 +1,8 @@
 # PR #6 + #7 + #8 consolidation — Phase C1
 
-**Lưu ý lịch sử:** Nội dung bên dưới ghi lại trạng thái Phase C1 trước khi commit/push. PR #9 hiện là Draft trên GitHub; C4.1 đang sửa các finding trong worktree nhưng chưa commit/push. Kết quả Browser QA ở Phase C3 là xác nhận thủ công của chủ dự án, không phải kiểm thử browser tự động. Upload Cloudinary thật và triển khai production vẫn chưa được xác minh.
+**Trạng thái hiện tại (Phase C4.3):** Nội dung bên dưới ghi lại Phase C1, giai đoạn triển khai ban đầu. Phase C2 đã hoàn tất Browser QA thủ công theo báo cáo của chủ dự án; đây không phải kiểm thử browser tự động. Phase C3 tạo Draft PR #9. Phase C4.1 sửa các finding và kiểm thử local: backend 96/96, frontend unit tests 7/7, lint và build đều PASS. Phase C4.2 đã commit và push remediation tại `c8fc6777db32a569f5da801d21de7decc491361f`; GitHub Actions run #18 thành công ở backend build/test và frontend unit tests/lint/build. PR #9 vẫn là Draft, chưa merge hoặc deploy. Upload Cloudinary thật và mức độ khớp toàn bộ giao diện Stitch vẫn **NOT VERIFIED**; CI thành công không xác nhận khả năng triển khai lên database có dữ liệu hiện hữu.
 
-Status: **IMPLEMENTED locally, runtime Browser QA NOT VERIFIED**. This branch starts at PR #8 commit `81a55328f594467704c31c9466f8ade5005c3bf4`. It has not been committed, pushed, merged, or deployed.
+**Historical Phase C1 status:** IMPLEMENTED locally; runtime Browser QA was NOT VERIFIED at that stage. The consolidation started at PR #8 commit `81a55328f594467704c31c9466f8ade5005c3bf4`. At Phase C1 it had not yet been committed, pushed, merged, or deployed.
 
 ## Sources and inventory
 
