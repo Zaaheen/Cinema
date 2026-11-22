@@ -1,4 +1,5 @@
 @import '@astryxdesign/core/reset.css';
+@tailwind utilities;
 
 :root {
   --color-text-primary: #1c171a;
@@ -49,7 +50,7 @@ button, input, select { font: inherit; }
 a { color: inherit; }
 a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid rgb(235 47 150 / 40%); outline-offset: 3px; }
 h1, h2, h3, p { margin-top: 0; }
-h1, h2, h3 { color: var(--color-text-primary); line-height: 1.18; }
+h1, h2, h3 { line-height: 1.18; }
 h1 { font-size: clamp(28px, 4vw, 42px); letter-spacing: -0.035em; }
 h2 { font-size: clamp(22px, 3vw, 30px); letter-spacing: -0.025em; }
 
@@ -219,3 +220,25 @@ h2 { font-size: clamp(22px, 3vw, 30px); letter-spacing: -0.025em; }
 .admin-movie-form { display: grid; gap: 1.25rem; color: #f4e8ed; }.admin-movie-form__header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1rem; }.admin-movie-form__header h2 { margin: .25rem 0 .5rem; font-weight: 800; letter-spacing: -.03em; }.admin-movie-form__header p:not(.eyebrow) { max-inline-size: 46rem; margin: 0; color: #c7aeb8; }.admin-movie-form__back, .admin-movies__create, .admin-movies__edit { color: inherit; font-weight: 700; text-decoration: none; }.admin-movie-form__back, .admin-movies__edit { border: 1px solid #6d565f; border-radius: .65rem; background: #33272d; padding: .55rem .8rem; }.admin-movie-form__card { display: grid; gap: 1rem; border: 1px solid var(--admin-border); border-radius: 1rem; background: var(--admin-panel); box-shadow: 0 1rem 2rem rgba(0,0,0,.18); padding: 1.15rem; }.admin-movie-form__required { margin: 0; color: #c7aeb8; font-size: .85rem; }.admin-movie-form__required span, .admin-movie-form label > span[aria-hidden] { color: #ff8dbe; }.admin-movie-form__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem; }.admin-movie-form__field { display: grid; min-inline-size: 0; gap: .35rem; color: #d7bbc5; font-size: .85rem; font-weight: 700; }.admin-movie-form__field--wide { grid-column: 1 / -1; }.admin-movie-form input, .admin-movie-form select, .admin-movie-form textarea { box-sizing: border-box; inline-size: 100%; min-block-size: 2.75rem; border: 1px solid #534149; border-radius: .6rem; background: #171114; color: #f4e8ed; font: inherit; font-size: max(1rem, 1em); padding: .65rem .7rem; }.admin-movie-form textarea { min-block-size: 7rem; resize: vertical; }.admin-movie-form :is(input,select,textarea,button,a):focus-visible { outline: 3px solid #ffc640; outline-offset: 3px; }.admin-movie-form :is(input,select,textarea)[aria-invalid="true"] { border-color: #cf516e; }.admin-movie-form__genres { display: grid; gap: .75rem; min-inline-size: 0; margin: 0; border: 1px solid #534149; border-radius: .7rem; padding: .9rem; }.admin-movie-form__genres legend { color: #d7bbc5; font-size: .85rem; font-weight: 700; padding-inline: .25rem; }.admin-movie-form__genres p { margin: 0; color: #c7aeb8; }.admin-movie-form__genre-options { display: flex; flex-wrap: wrap; gap: .65rem 1rem; }.admin-movie-form__genre-options label { display: inline-flex; align-items: center; gap: .45rem; color: #f4e8ed; font-size: .95rem; font-weight: 600; }.admin-movie-form__genre-options input { inline-size: 1.15rem; min-block-size: 1.15rem; accent-color: #ff45a2; }.admin-movie-form__actions { display: flex; flex-wrap: wrap; justify-content: end; gap: .75rem; }.admin-movie-form__actions button { min-block-size: 2.75rem; border: 1px solid #6d565f; border-radius: .65rem; background: #33272d; color: #f4e8ed; font: inherit; font-weight: 700; padding: .55rem .8rem; }.admin-movie-form__actions button:disabled { cursor: not-allowed; opacity: .5; }.admin-movies__header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1rem; }.admin-movies__create { display: inline-flex; align-items: center; min-block-size: 2.75rem; border-radius: .65rem; padding: 0 .8rem; }
 @media (max-width: 48rem) { .admin-movie-form__header { align-items: stretch; flex-direction: column; }.admin-movie-form__back, .admin-movies__create { justify-content: center; }.admin-movie-form__grid { grid-template-columns: 1fr; }.admin-movie-form__actions { justify-content: stretch; }.admin-movie-form__actions button { flex: 1 1 10rem; } }
 @media (pointer: coarse) { .admin-movie-form input, .admin-movie-form select, .admin-movie-form textarea, .admin-movie-form button, .admin-movie-form__back, .admin-movies__create, .admin-movies__edit { min-block-size: 3rem; } }
+
+.admin-movie-form__hint, .admin-movie-media p, .admin-schedule p { color: #c7aeb8; }
+.admin-movie-media h3, .admin-schedule h3 { margin: 0 0 .4rem; color: #f4e8ed; }
+.admin-movie-media h4, .admin-schedule h4 { margin: 0 0 .6rem; color: #f4e8ed; }
+.admin-movie-media__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.admin-movie-media__grid > div { min-inline-size: 0; border: 1px solid var(--admin-border); border-radius: .75rem; padding: 1rem; }
+.admin-movie-media__grid form { display: grid; gap: .7rem; margin-top: 1rem; }
+.admin-movie-media__poster { display: block; inline-size: min(9rem, 100%); max-block-size: 14rem; object-fit: cover; border-radius: .5rem; }
+.admin-movie-media__actions, .admin-schedule__actions, .admin-schedule__row-actions { display: flex; flex-wrap: wrap; gap: .6rem; }
+.admin-movie-media button, .admin-schedule button { min-block-size: 2.75rem; border: 1px solid #6d565f; border-radius: .65rem; background: #33272d; color: #f4e8ed; font: inherit; font-weight: 700; padding: .55rem .8rem; }
+.admin-movie-media button:disabled, .admin-schedule button:disabled { cursor: not-allowed; opacity: .5; }
+.admin-movie-media :is(input,button,a):focus-visible, .admin-schedule :is(input,select,button):focus-visible { outline: 3px solid #ffc640; outline-offset: 3px; }
+.admin-movie-media__notice, .admin-schedule__notice { border-radius: .65rem; background: #314837; color: #d9f7e3 !important; padding: .7rem; }
+.admin-schedule__form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; align-items: end; }
+.admin-schedule__form > p, .admin-schedule__actions { grid-column: 1 / -1; }
+.admin-schedule__list { border-top: 1px solid var(--admin-border); padding-top: 1rem; }
+.admin-schedule__list-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; }
+.admin-schedule__scroll { max-inline-size: 100%; overflow-x: auto; }
+.admin-schedule table { inline-size: 100%; min-inline-size: 42rem; border-collapse: collapse; text-align: left; }
+.admin-schedule th, .admin-schedule td { padding: .7rem .5rem; border-bottom: 1px solid var(--admin-border); }
+.admin-schedule th { color: #f7c9dc; }
+@media (max-width: 48rem) { .admin-movie-media__grid, .admin-schedule__form { grid-template-columns: 1fr; }.admin-movie-media__actions button, .admin-schedule__actions button { flex: 1 1 8rem; } }

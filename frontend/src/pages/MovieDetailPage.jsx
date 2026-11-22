@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { fetchMovie, fetchMovies, fetchShowtimes } from '../api/catalog'
 import { CinemaFooter, CinemaHeader } from '../components/CinemaSiteChrome'
 import { getErrorMessage } from '../lib/errors'
+import { loadYouTubeIframeApi, trailerEmbedErrorMessage, trailerEmbedUrl, trailerVideoId, trailerWatchUrl } from '../lib/trailerPlayer'
 
 const zone = 'Asia/Ho_Chi_Minh'
 const isoDay = new Intl.DateTimeFormat('en-CA', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit' })
@@ -10,18 +11,6 @@ const dayText = new Intl.DateTimeFormat('vi-VN', { timeZone: zone, weekday: 'sho
 const clock = new Intl.DateTimeFormat('vi-VN', { timeZone: zone, hour: '2-digit', minute: '2-digit', hour12: false })
 const released = new Intl.DateTimeFormat('vi-VN', { timeZone: zone, dateStyle: 'medium' })
 const cinemaDay = (offset) => { const d = new Date(`${isoDay.format(new Date())}T12:00:00+07:00`); d.setUTCDate(d.getUTCDate() + offset); return isoDay.format(d) }
-const trailerVideoId = (value) => {
-  try {
-    const url = new URL(value)
-    if (url.protocol !== 'https:' || url.hostname !== 'www.youtube.com' || url.pathname !== '/watch' || url.username || url.password || url.port || url.hash) return null
-    const entries = [...url.searchParams.entries()]
-    if (entries.length !== 1 || entries[0][0] !== 'v') return null
-    return /^[A-Za-z0-9_-]{11}$/.test(entries[0][1]) ? entries[0][1] : null
-  } catch {
-    return null
-  }
-}
-
 export default function MovieDetailPage() {
   const { movieId } = useParams()
   const [movieRequest, setMovieRequest] = useState(null)
@@ -54,10 +43,36 @@ function Status({ text, error }) { return <div className="min-h-screen bg-surfac
 function TrailerPlayer({ title, videoId }) {
   const dialogRef = useRef(null)
   const [playing, setPlaying] = useState(false)
-  const watchUrl = `https://www.youtube.com/watch?v=${videoId}`
+  const [embedError, setEmbedError] = useState('')
+  const watchUrl = trailerWatchUrl(videoId)
+
+  useEffect(() => {
+    if (!playing) return undefined
+    let live = true
+    let player
+    loadYouTubeIframeApi()
+      .then((YT) => {
+        if (!live || !document.getElementById('cinema-trailer-iframe')) return
+        player = new YT.Player('cinema-trailer-iframe', {
+          events: {
+            onError: (event) => {
+              if (live) setEmbedError(trailerEmbedErrorMessage(event.data))
+            },
+          },
+        })
+      })
+      .catch(() => {
+        if (live) setEmbedError('Không thể kiểm tra trình phát YouTube. Nếu video không phát, hãy mở trên YouTube.')
+      })
+    return () => {
+      live = false
+      player?.destroy()
+    }
+  }, [playing])
 
   function openTrailer() {
     dialogRef.current?.showModal()
+    setEmbedError('')
     setPlaying(true)
   }
 
@@ -71,8 +86,9 @@ function TrailerPlayer({ title, videoId }) {
     </button>
     <dialog ref={dialogRef} onClose={() => setPlaying(false)} aria-label={`Trailer ${title}`} className="w-[min(92vw,960px)] max-w-none rounded-xl border border-surface-container-highest bg-surface-container-low p-4 text-on-surface backdrop:bg-black/80">
       <div className="mb-3 flex items-center justify-between gap-4"><h2 className="text-lg font-bold">Trailer {title}</h2><button type="button" onClick={closeTrailer} className="rounded-lg border border-surface-container-highest px-3 py-2 focus-visible:outline-2 focus-visible:outline-primary">Đóng</button></div>
-      {playing && <iframe title={`Trailer ${title}`} src={`https://www.youtube-nocookie.com/embed/${videoId}`} className="aspect-video w-full rounded-lg" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />}
-      <a href={watchUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-primary underline">Xem trên YouTube nếu video không phát</a>
+      {playing && <iframe id="cinema-trailer-iframe" title={`Trailer ${title}`} src={trailerEmbedUrl(videoId, window.location.origin)} className="aspect-video w-full rounded-lg" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />}
+      {embedError ? <p role="alert" className="mt-3 text-sm text-error">{embedError}</p> : <p className="mt-3 text-sm text-on-surface-variant">Nếu YouTube báo video không khả dụng, hãy xem trực tiếp trên YouTube.</p>}
+      <a href={watchUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-primary underline">Xem trên YouTube</a>
     </dialog>
   </>
 }

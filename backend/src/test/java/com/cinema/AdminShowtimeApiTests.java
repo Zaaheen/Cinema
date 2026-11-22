@@ -66,6 +66,20 @@ class AdminShowtimeApiTests {
     }
 
     @Test
+    void adminRoomListUsesDatabaseAndRequiresAdmin() throws Exception {
+        Room inactive = room("INACTIVE");
+        String path = "/api/v1/admin/rooms";
+        mockMvc.perform(get(path)).andExpect(status().isUnauthorized());
+        for (String role : java.util.List.of("MEMBER", "EMPLOYEE")) {
+            mockMvc.perform(get(path).header("Authorization", bearer(role))).andExpect(status().isForbidden());
+        }
+        mockMvc.perform(get(path).header("Authorization", bearer("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[?(@.id == " + activeRoom.getId() + ")].status").value("ACTIVE"))
+                .andExpect(jsonPath("$.data[?(@.id == " + inactive.getId() + ")].status").value("INACTIVE"));
+    }
+
+    @Test
     void adminCanCreateListUpdateAndCancelFutureScheduledShowtime() throws Exception {
         LocalDate day = LocalDate.now(CINEMA_ZONE).plusDays(2);
         String create = request(movie.getId(), activeRoom.getId(), day + "T10:00:00+07:00");

@@ -94,6 +94,7 @@ Backend phải tự xác thực giá, khuyến mãi, điểm và tình trạng g
 | POST | `/admin/movies/{id}/poster` | ADMIN | Upload poster PNG đã kiểm tra |
 | PATCH | `/admin/movies/{id}/trailer` | ADMIN | Cập nhật/xóa URL YouTube hợp lệ |
 | GET | `/admin/genres` | ADMIN | Danh sách genre canonical selectable |
+| GET | `/admin/rooms` | ADMIN | Danh sách phòng chiếu thật, gồm `id`, `name`, `status` (kể cả phòng không ACTIVE), sắp theo `name,id`; không tạo hoặc sửa dữ liệu |
 | GET/POST | `/admin/showtimes` | ADMIN | Danh sách/tạo suất chiếu |
 | GET/PATCH | `/admin/showtimes/{id}` | ADMIN | Xem/sửa suất chiếu tương lai không có lịch sử booking |
 | POST | `/admin/showtimes/{id}/cancel` | ADMIN | Hủy suất chiếu đủ điều kiện |
@@ -105,6 +106,8 @@ Backend phải tự xác thực giá, khuyến mãi, điểm và tình trạng g
 | GET/POST/PATCH | `/admin/staff` và `/admin/staff/{id}` | TBD | Chưa xác nhận contract quản lý nhân viên |
 | GET | `/admin/reports/revenue?from=&to=` | TBD | Chưa xác nhận contract báo cáo |
 | GET | `/admin/reports/tickets?from=&to=` | TBD | Chưa xác nhận contract báo cáo |
+
+**Admin Room List — IMPLEMENTED:** `GET /api/v1/admin/rooms` trả `ApiResponse<List<AdminRoomResponse>>`, mỗi mục có `id`, `name`, `status`. Danh sách rỗng trả `200` với `data: []`. Chỉ ADMIN được truy cập; anonymous trả `401`, MEMBER/EMPLOYEE trả `403`. Client chỉ cho chọn phòng `ACTIVE` khi tạo/sửa lịch chiếu; backend vẫn xác thực trạng thái phòng khi ghi.
 
 **Lưu ý:** các route quản trị ở đây là bản nháp; phân quyền và CRUD cụ thể phải theo SRS đã được nhóm thống nhất.
 

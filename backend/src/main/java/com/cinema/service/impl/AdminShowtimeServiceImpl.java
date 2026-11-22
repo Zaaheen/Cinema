@@ -3,6 +3,7 @@ package com.cinema.service.impl;
 import com.cinema.dto.admin.showtime.AdminShowtimeCreateRequest;
 import com.cinema.dto.admin.showtime.AdminShowtimePatchRequest;
 import com.cinema.dto.admin.showtime.AdminShowtimeResponse;
+import com.cinema.dto.admin.showtime.AdminRoomResponse;
 import com.cinema.entity.Movie;
 import com.cinema.entity.Room;
 import com.cinema.entity.Showtime;
@@ -21,6 +22,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import org.springframework.data.domain.Sort;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -82,6 +84,13 @@ public class AdminShowtimeServiceImpl implements AdminShowtimeService {
         return showtimeRepository.findAdminByStartsAtBetween(start, next).stream()
                 .map(showtime -> AdminShowtimeResponse.from(showtime, hasBookingHistory(showtime.getId())))
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AdminRoomResponse> listRooms() {
+        return roomRepository.findAll(Sort.by("name").ascending().and(Sort.by("id").ascending()))
+                .stream().map(AdminRoomResponse::from).toList();
     }
 
     @Override

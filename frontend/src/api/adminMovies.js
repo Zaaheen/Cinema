@@ -24,3 +24,15 @@ export async function updateAdminMovie(movieId, payload) {
   const { data } = await apiClient.patch(`/admin/movies/${movieId}`, payload)
   return data.data
 }
+
+export async function uploadAdminMoviePoster(movieId, file) {
+  const body = new FormData()
+  body.append('file', file)
+  const { data } = await apiClient.post(`/admin/movies/${movieId}/poster`, body)
+  return data.data
+}
+
+export async function updateAdminMovieTrailer(movieId, trailerUrl) {
+  const { data } = await apiClient.patch(`/admin/movies/${movieId}/trailer`, { trailerUrl })
+  return data.data
+}

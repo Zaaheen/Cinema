@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { createAdminMovie, getAdminGenres, getAdminMovie, updateAdminMovie } from '../api/adminMovies'
+import { AdminMovieMediaPanel } from './AdminMovieMediaPanel'
+import { AdminMovieScheduleEditor } from './AdminMovieScheduleEditor'
 
 const EMPTY_FORM = {
   title: '',
@@ -57,6 +59,7 @@ export function AdminMovieFormPage() {
   const [saving, setSaving] = useState(false)
   const [initialForm, setInitialForm] = useState(EMPTY_FORM)
   const [ready, setReady] = useState(false)
+  const [movieData, setMovieData] = useState(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -70,6 +73,7 @@ export function AdminMovieFormPage() {
         if (!active) return
         setGenres(availableGenres)
         if (movie) {
+          setMovieData(movie)
           const nextForm = formFromMovie(movie)
           setInitialForm(nextForm)
           setForm(nextForm)
@@ -182,10 +186,9 @@ export function AdminMovieFormPage() {
     try {
       setSaving(true)
       setRequestError('')
-      if (isEditing) await updateAdminMovie(movieId, payload)
-      else await createAdminMovie(payload)
+      const savedMovie = isEditing ? await updateAdminMovie(movieId, payload) : await createAdminMovie(payload)
       toast.success(isEditing ? 'Cập nhật phim thành công.' : 'Tạo phim thành công.')
-      navigate('/admin/movies')
+      navigate(isEditing ? '/admin/movies' : `/admin/movies/${savedMovie.id}/edit`)
     } catch (error) {
       const message = messageFor(error, isEditing ? 'Cập nhật phim thất bại.' : 'Tạo phim thất bại.')
       setRequestError(message)
@@ -238,5 +241,11 @@ export function AdminMovieFormPage() {
 
       <footer className="admin-movie-form__actions"><button type="button" disabled={saving} onClick={leaveForm}>Hủy</button><button className="price-admin__primary" type="submit" disabled={saving || genresLoading || (!isEditing && genres.length === 0)}>{saving ? 'Đang lưu…' : isEditing ? 'Lưu thay đổi' : 'Tạo phim'}</button></footer>
     </form>
+    {isEditing && movieData ? <>
+      <AdminMovieMediaPanel movieId={movieId} posterUrl={movieData.posterUrl} trailerUrl={movieData.trailerUrl}
+        onChange={(media) => setMovieData((current) => ({ ...current, ...media }))} />
+      <AdminMovieScheduleEditor movieId={movieId} movieTitle={movieData.title} durationMinutes={movieData.durationMinutes}
+        movieStatus={movieData.status} durationHasUnsavedChanges={form.durationMinutes !== initialForm.durationMinutes} />
+    </> : <p className="admin-movie-form__hint">Sau khi tạo phim, trang chỉnh sửa sẽ mở để bạn tải poster, gắn trailer và tạo lịch chiếu.</p>}
   </section>
 }
