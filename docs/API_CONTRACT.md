@@ -109,6 +109,10 @@ Backend phải tự xác thực giá, khuyến mãi, điểm và tình trạng g
 
 **Admin Room List — IMPLEMENTED:** `GET /api/v1/admin/rooms` trả `ApiResponse<List<AdminRoomResponse>>`, mỗi mục có `id`, `name`, `status`. Danh sách rỗng trả `200` với `data: []`. Chỉ ADMIN được truy cập; anonymous trả `401`, MEMBER/EMPLOYEE trả `403`. Client chỉ cho chọn phòng `ACTIVE` khi tạo/sửa lịch chiếu; backend vẫn xác thực trạng thái phòng khi ghi.
 
+**Admin Seat Price PATCH — IMPLEMENTED:** `PATCH /api/v1/admin/seat-prices/{id}` chỉ cho cập nhật quy tắc `origin=ADMIN_APPROVED` với `rowVersion` hợp lệ. ID không tồn tại hoặc thuộc `LEGACY_UNREVIEWED`/`LOCAL_FIXTURE` trả `404`; version cũ trả `409 PRICE_RULE_CHANGED`. Legacy/fixture không được kích hoạt hay chuyển nguồn gốc qua API này. Quy tắc ACTIVE được revise bằng successor và audit hiện có.
+
+**Admin Showtime conflicts — IMPLEMENTED:** Các thao tác tạo/sửa/hủy chỉ dành cho ADMIN. `POST /api/v1/admin/showtimes` và `PATCH /api/v1/admin/showtimes/{id}` trả `409 SHOWTIME_ROOM_CONFLICT` khi vi phạm chính xác exclusion constraint V8. `PATCH`/`POST .../cancel` trả `409 SHOWTIME_NOT_EDITABLE` nếu suất không còn là `SCHEDULED` tương lai, hoặc `409 SHOWTIME_HAS_BOOKING_HISTORY` nếu đã có lịch sử đặt vé. Backend tính khoảng chuẩn bị phòng 15 phút; client không tự áp dụng thêm buffer.
+
 **Lưu ý:** các route quản trị ở đây là bản nháp; phân quyền và CRUD cụ thể phải theo SRS đã được nhóm thống nhất.
 
 **Quản trị khuyến mãi — APPROVED:** chỉ `ADMIN` được gọi các endpoint trên. Request tạo/cập nhật nhận `title`, `description` (nullable), `discountType` (`PERCENT` hoặc `FIXED`), `discountValue`, `startsAt`, `endsAt`, `status` (nullable; khi tạo mặc định `ACTIVE`). `discountValue` phải lớn hơn 0; nếu `discountType=PERCENT` thì không được vượt 100; `endsAt` phải sau `startsAt`. Response trả `id`, các trường request và `status`. Tạo mới trả `201`; đọc/cập nhật thành công trả `200`; request không hợp lệ trả `400`; ID không tồn tại trả `404`. Không có endpoint xóa cứng khuyến mãi.

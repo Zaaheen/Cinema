@@ -83,6 +83,9 @@ public class SeatPriceAdminServiceImpl implements SeatPriceAdminService {
     public SeatPriceAdminResponse update(Long id, SeatPriceUpdateRequest request) {
         SeatPrice existing = seatPriceRepository.findById(id)
                 .orElseThrow(() -> BusinessException.notFound("Không tìm thấy quy tắc giá"));
+        if (!"ADMIN_APPROVED".equals(existing.getOrigin())) {
+            throw BusinessException.notFound("Không tìm thấy quy tắc giá");
+        }
         if (!Objects.equals(existing.getRowVersion(), request.rowVersion())) {
             throw BusinessException.conflict("PRICE_RULE_CHANGED");
         }

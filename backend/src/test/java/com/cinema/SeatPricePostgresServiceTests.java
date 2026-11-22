@@ -115,6 +115,30 @@ class SeatPricePostgresServiceTests {
     }
 
     @Test
+    void rejectsLegacyPricePatchWithoutWritingAuditOnPostgres() throws Exception {
+        User admin = user("postgres-price-admin", "ADMIN");
+        SeatPrice legacy = new SeatPrice();
+        legacy.setSeatType("STANDARD");
+        legacy.setPrice(new BigDecimal("90000"));
+        legacy.setValidFrom(LocalDate.of(2027, 1, 1));
+        legacy.setStatus("INACTIVE");
+        legacy.setOrigin("LEGACY_UNREVIEWED");
+        SeatPrice saved = seatPriceRepository.saveAndFlush(legacy);
+
+        mockMvc.perform(patch("/api/v1/admin/seat-prices/{id}", saved.getId())
+                        .header("Authorization", bearer(admin)).contentType("application/json")
+                        .content("{\"rowVersion\":" + saved.getRowVersion() + ",\"status\":\"ACTIVE\"}"))
+                .andExpect(status().isNotFound());
+
+        SeatPrice unchanged = seatPriceRepository.findById(saved.getId()).orElseThrow();
+        assertEquals("LEGACY_UNREVIEWED", unchanged.getOrigin());
+        assertEquals("INACTIVE", unchanged.getStatus());
+        assertEquals(0, unchanged.getPrice().compareTo(new BigDecimal("90000")));
+        assertEquals(saved.getRowVersion(), unchanged.getRowVersion());
+        assertEquals(0, auditLogRepository.count());
+    }
+
+    @Test
     void patchResponseReturnsThePersistedOptimisticLockVersion() throws Exception {
         var draft = seatPriceAdminService.createDraft(new SeatPriceRequest("STANDARD", null,
                 new BigDecimal("100000"), LocalDate.of(2027, 1, 1), null));

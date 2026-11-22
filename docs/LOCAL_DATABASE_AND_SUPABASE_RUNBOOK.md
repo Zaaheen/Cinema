@@ -15,15 +15,36 @@ Profile mặc định của backend là `local`. Các biến liên quan gồm:
 - `SPRING_FLYWAY_URL`, `SPRING_FLYWAY_USER`, `SPRING_FLYWAY_PASSWORD`, `SPRING_FLYWAY_TARGET`
 - `JWT_SECRET`, `CORS_ALLOWED_ORIGINS`
 
-`backend/scripts/start-local.ps1` chỉ cho phép URL local `jdbc:postgresql://127.0.0.1:5432/cinema`, profile `local` và Flyway target `6`. Password PostgreSQL/JWT secret phải được cung cấp qua process environment hoặc secure prompt; launcher không nạp `backend/.env`.
+Checkout này **không có** `backend/scripts/start-local.ps1`. `backend/gradlew.bat` có tồn tại, nhưng không tự kiểm tra database đích: chỉ chạy `bootRun` sau khi người vận hành xác minh process environment, JDBC/Flyway URL, profile, target, quyền truy cập và có phê duyệt migration cho đúng database. Không dựa vào `.env` hoặc giá trị mặc định của `application-local.yaml` để suy ra đích an toàn. Cung cấp password/JWT secret qua cơ chế bí mật của môi trường; không in ra log.
 
 ## Flyway và startup
 
-Repository chứa migration `V1`–`V6`. Flyway được bật trong Spring Boot và launcher local đặt target tại V6. Trước khi startup, maintainer phải kiểm tra database đích và `flyway_schema_history`; không được suy ra rằng migration đã hoàn tất chỉ từ source code hoặc từ Hibernate.
+Repository chứa migration `V1`–`V8`. Flyway được bật trong Spring Boot; nếu không giới hạn target, startup có thể áp dụng mọi migration còn thiếu đến V8. Trước khi startup, maintainer phải kiểm tra database đích và `flyway_schema_history`, đối chiếu checksum với source và xác định target được phép; không được suy ra rằng migration đã hoàn tất chỉ từ source code hoặc từ Hibernate. Không sửa migration đã áp dụng.
 
 `ddl-auto=validate` chỉ yêu cầu Hibernate kiểm tra schema. Nó không vô hiệu hóa Flyway. Khởi động backend có thể kết nối database và chạy migration còn thiếu, vì vậy không xem startup là thao tác read-only.
 
 Không dùng `flyway clean`, `baseline`, `repair`, `DROP DATABASE`, `TRUNCATE` hoặc bất kỳ thao tác ghi phá huỷ nào trong workflow này khi chưa có phê duyệt rõ ràng.
+
+### Preflight read-only trước V6
+
+V1 cho phép `price = 0`, còn V6 thay `ck_seat_prices_price` bằng `price > 0`; V6 sẽ thất bại nếu còn dòng không dương. Chỉ chạy các truy vấn sau trên đúng database đã được xác nhận, với kết nối read-only; không chạy V6 từ runbook này:
+
+```sql
+SELECT version, success, checksum
+FROM flyway_schema_history
+ORDER BY installed_rank;
+
+SELECT count(*) AS existing_price_count,
+       count(*) FILTER (WHERE price <= 0) AS non_positive_price_count
+FROM seat_prices;
+
+SELECT id, seat_type, movie_version, price, valid_from, valid_to
+FROM seat_prices
+WHERE price <= 0
+ORDER BY id;
+```
+
+Điều kiện trước V6: V1–V5 phải đúng history/checksum dự kiến, V6 chưa áp dụng, `non_positive_price_count = 0`, backup và quyền `btree_gist` đã được xác minh. Nếu có dòng `price <= 0`, **dừng** và xin quyết định riêng cho dữ liệu/migration; không tự sửa hoặc xóa. V6 phân loại dữ liệu cũ thành `LEGACY_UNREVIEWED` hoặc `LOCAL_FIXTURE` và đặt `INACTIVE`, không biến chúng thành giá chính thức. Vì vậy `GET /api/v1/ticket-prices` có thể trả danh sách rỗng sau V6. Chỉ ADMIN hợp lệ, theo bảng giá đã được chủ dự án phê duyệt, mới dùng Admin Price API tạo DRAFT, kiểm tra quy tắc rồi PATCH kích hoạt bằng `rowVersion` hiện tại; xác minh audit và public API sau đó. Không dùng fixture hoặc legacy làm giá approved và không tự thực hiện quy trình này khi chưa được phê duyệt cho database đích.
 
 ## Docker PostgreSQL
 
@@ -54,7 +75,7 @@ Quy tắc `.gitignore` hiện chưa có pattern chuyên biệt cho database dump
 
 - Kiểm tra process environment và template thay vì mở credential file thật.
 - Kiểm tra container/volume/port bằng lệnh Docker hoặc hệ điều hành chỉ đọc.
-- Kiểm tra JDBC URL, profile và Flyway target trong launcher trước khi khởi động.
+- Kiểm tra JDBC URL, profile và Flyway target trong process environment/cấu hình thực tế trước khi khởi động; checkout này không có launcher `start-local.ps1`.
 - Nếu trạng thái database không chắc chắn, dừng lại và lấy backup/approval; không thử `clean`, reset hoặc seed để “sửa nhanh”.
 
 ## Ghi chú Supabase

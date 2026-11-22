@@ -1,5 +1,7 @@
 # PR #6 + #7 + #8 consolidation — Phase C1
 
+**Lưu ý lịch sử:** Nội dung bên dưới ghi lại trạng thái Phase C1 trước khi commit/push. PR #9 hiện là Draft trên GitHub; C4.1 đang sửa các finding trong worktree nhưng chưa commit/push. Kết quả Browser QA ở Phase C3 là xác nhận thủ công của chủ dự án, không phải kiểm thử browser tự động. Upload Cloudinary thật và triển khai production vẫn chưa được xác minh.
+
 Status: **IMPLEMENTED locally, runtime Browser QA NOT VERIFIED**. This branch starts at PR #8 commit `81a55328f594467704c31c9466f8ade5005c3bf4`. It has not been committed, pushed, merged, or deployed.
 
 ## Sources and inventory

@@ -1,5 +1,6 @@
 package com.cinema;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -53,6 +54,34 @@ class SeatPriceAdminApiTests {
         for (String role : new String[] {"MEMBER", "EMPLOYEE"}) {
             mockMvc.perform(get("/api/v1/admin/seat-prices").header("Authorization", bearer(saveUser("price-" + role, role))))
                     .andExpect(status().isForbidden());
+        }
+    }
+
+    @Test
+    void legacyPriceRulesCannotBePatchedOrActivated() throws Exception {
+        User admin = saveUser("price-legacy-admin", "ADMIN");
+        for (String origin : new String[] {"LEGACY_UNREVIEWED", "LOCAL_FIXTURE"}) {
+            SeatPrice legacy = new SeatPrice();
+            legacy.setSeatType("STANDARD");
+            legacy.setPrice(new BigDecimal("90000"));
+            legacy.setValidFrom(LocalDate.of(2027, 1, 1));
+            legacy.setStatus("INACTIVE");
+            legacy.setOrigin(origin);
+            SeatPrice saved = seatPriceRepository.saveAndFlush(legacy);
+
+            mockMvc.perform(patch("/api/v1/admin/seat-prices/{id}", saved.getId())
+                            .header("Authorization", bearer(admin))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"rowVersion\":" + saved.getRowVersion() + ",\"status\":\"ACTIVE\",\"amount\":100000}"))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.message").value("Không tìm thấy quy tắc giá"));
+
+            SeatPrice unchanged = seatPriceRepository.findById(saved.getId()).orElseThrow();
+            assertEquals(origin, unchanged.getOrigin());
+            assertEquals("INACTIVE", unchanged.getStatus());
+            assertEquals(0, unchanged.getPrice().compareTo(new BigDecimal("90000")));
+            assertEquals(saved.getRowVersion(), unchanged.getRowVersion());
+            assertEquals(0, auditLogRepository.count());
         }
     }
 

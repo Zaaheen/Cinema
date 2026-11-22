@@ -28,7 +28,9 @@ WHERE (status IN ('SCHEDULED', 'ONGOING'))
 - Different rooms remain independent.
 - PostgreSQL enforces this rule for concurrent `INSERT` and `UPDATE`; an exclusion conflict returns SQLSTATE `23P01`.
 
-V8 deliberately adds no mapped columns, no redundant GiST index, no operating-hours or 15-minute-start validation, and no API error mapping. Those application rules, including future `SHOWTIME_ROOM_CONFLICT` HTTP handling and protection of booked showtimes, are deferred to Slice 5.
+V8 deliberately adds no mapped columns, no redundant GiST index, no operating-hours or 15-minute-start validation, and no API error mapping **inside the migration**. The current Admin Showtime service implements those application rules: it validates 08:00–23:00 and 15-minute start slots, rejects updates/cancellation after a showtime starts or leaves `SCHEDULED`, and checks booking history before editing.
+
+Current `POST /api/v1/admin/showtimes`, `PATCH /api/v1/admin/showtimes/{id}` and `POST /api/v1/admin/showtimes/{id}/cancel` require ADMIN. An exact PostgreSQL `23P01` conflict on `ex_showtimes_active_room_occupied` maps to HTTP `409` with `SHOWTIME_ROOM_CONFLICT`. PATCH/cancel return HTTP `409` with `SHOWTIME_NOT_EDITABLE` or `SHOWTIME_HAS_BOOKING_HISTORY` when applicable. PATCH retries SQLSTATE `40P01` deadlocks at most three total attempts in fresh transactions; this is not a general retry of all failures. The future booking writer still must participate in the same locking protocol; end-to-end booking race safety is not yet verified.
 
 ## Existing-data and deployment policy
 
