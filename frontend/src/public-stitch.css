@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { background: #181215; }
+  body { min-width: 320px; margin: 0; background: #181215; color: #ecdfe3; font-family: Inter, system-ui, sans-serif; }
+  *, ::before, ::after { box-sizing: border-box; }
+  button, input { font: inherit; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid rgb(255 69 162 / 60%); outline-offset: 3px; }
+}
+
+.material-symbols-outlined { font-family: 'Material Symbols Outlined'; font-style: normal; font-weight: normal; line-height: 1; }
+.role-dashboard { width: min(100% - 2rem, 72rem); margin: 6rem auto 4rem; color: #ecdfe3; }
+.role-dashboard > header { margin-bottom: 1.5rem; }
+.eyebrow { margin: 0 0 .5rem; color: #ffb0cd; font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.feature-card { padding: 1.5rem; border: 1px solid #4c3941; border-radius: 1rem; background: #241e21; }
+.feature-card dl { display: grid; gap: 1rem; margin: 0; }
+.feature-card dt { color: #a98893; font-size: .8rem; font-weight: 700; }
+.feature-card dd { margin: .25rem 0 0; overflow-wrap: anywhere; }
+.feature-card footer { display: flex; gap: .75rem; margin-top: 1.5rem; }
+.feature-card button { min-height: 2.75rem; border: 1px solid #6d565f; border-radius: .65rem; background: #33272d; color: #f4e8ed; font-weight: 700; padding: .55rem .8rem; }
+.page-status { width: min(100% - 2rem, 72rem); margin: 6rem auto; padding: 1rem; border-radius: .75rem; background: #241e21; color: #e2bdc8; text-align: center; }
+.promotion-list__state { display: grid; min-height: 18rem; place-content: center; gap: 1rem; border: 1px solid #4c3941; border-radius: 1rem; background: #241e21; color: #e2bdc8; text-align: center; }
+.promotion-list__state h2, .promotion-list__state p { margin: 0; }
+.promotion-list__state--error { color: #ffb4ab; }
+.promotion-list__state button { justify-self: center; min-height: 2.75rem; border: 1px solid #ff45a2; border-radius: .75rem; background: #ff45a2; color: #580031; font-weight: 700; padding: .5rem 1rem; }
+progress.promotion-list__spinner:indeterminate { width: 2.5rem; height: 2.5rem; justify-self: center; appearance: none; border: .2rem solid #4c3941; border-right-color: #ff45a2; border-radius: 50%; animation: promotion-list-spin 1.1s linear infinite; }
+progress.promotion-list__spinner:indeterminate::-webkit-progress-bar, progress.promotion-list__spinner:indeterminate::-webkit-progress-value, progress.promotion-list__spinner:indeterminate::-moz-progress-bar { display: none; background: none; }
+@keyframes promotion-list-spin { to { transform: rotate(1turn); } }
+@media (prefers-reduced-motion: reduce) { progress.promotion-list__spinner:indeterminate { animation-duration: 6s; } }

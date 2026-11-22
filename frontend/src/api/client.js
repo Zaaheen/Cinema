@@ -50,7 +50,7 @@ apiClient.interceptors.response.use(
     const config = error.config
     const status = error.response?.status
     const url = config?.url ?? ''
-    const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/refresh')
+    const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/refresh') || url.includes('/auth/logout')
 
     if (!config || status !== 401 || config._retry || isAuthEndpoint) {
       return Promise.reject(error)

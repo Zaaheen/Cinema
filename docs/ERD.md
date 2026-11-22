@@ -46,6 +46,7 @@
 7. Không xóa cứng phim/phòng/khuyến mãi đã có dữ liệu nghiệp vụ liên quan nếu điều đó phá lịch sử; cân nhắc `status`/soft delete.
 8. Mọi tiền tệ dùng kiểu decimal phù hợp, không dùng floating point.
 9. Thời gian lưu thống nhất; API trả ISO-8601 có timezone. Hiển thị theo múi giờ Việt Nam.
+10. **Bảo vệ phòng chiếu — IMPLEMENTED (V8):** PostgreSQL `btree_gist` và exclusion constraint `ex_showtimes_active_room_occupied` ngăn hai suất `SCHEDULED`/`ONGOING` cùng phòng có occupied range giao nhau. Occupied range là `[starts_at, ends_at + 15 phút)`; đúng 15 phút chuyển phòng được phép, ngắn hơn bị từ chối. `FINISHED`/`CANCELLED` không chiếm phòng. Constraint là nguồn bảo vệ cạnh tranh cho insert/update; V8 không tự sửa dữ liệu lịch sử và cần preflight/maintenance window trước deployment.
 
 ## 5. Quyết định đã chốt và các mục còn mở
 Đã chốt cho bản thiết kế:

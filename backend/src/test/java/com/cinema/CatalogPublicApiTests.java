@@ -95,12 +95,16 @@ class CatalogPublicApiTests {
         price.setSeatType("STANDARD");
         price.setPrice(new BigDecimal("75000.00"));
         price.setValidFrom(LocalDate.now().minusDays(1));
+        price.setStatus("ACTIVE");
+        price.setOrigin("ADMIN_APPROVED");
         seatPriceRepository.save(price);
         SeatPrice expiredPrice = new SeatPrice();
         expiredPrice.setSeatType("VIP");
         expiredPrice.setPrice(new BigDecimal("120000.00"));
         expiredPrice.setValidFrom(LocalDate.now().minusDays(2));
         expiredPrice.setValidTo(LocalDate.now().minusDays(1));
+        expiredPrice.setStatus("ACTIVE");
+        expiredPrice.setOrigin("ADMIN_APPROVED");
         seatPriceRepository.save(expiredPrice);
 
         mockMvc.perform(get("/api/v1/movies").param("size", "1"))

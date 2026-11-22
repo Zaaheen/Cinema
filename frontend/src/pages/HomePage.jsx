@@ -1,53 +1,34 @@
-import { Link } from 'react-router-dom'
-import { useAuth } from '../auth/useAuth'
-import { roleHome, roleLabel } from '../lib/roles'
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { fetchHome } from '../services/homeService';
+import { CinemaFooter, CinemaHeader } from '../components/CinemaSiteChrome';
+import StitchMovieCard from '../components/StitchMovieCard';
 
-export function HomePage() {
-  const { isAuthenticated, user } = useAuth()
+const time = new Intl.DateTimeFormat('vi-VN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' });
 
-  return (
-    <section className="hero">
-      <p className="eyebrow">Hệ thống quản lý rạp chiếu phim</p>
-      <h1>Đặt vé nhanh, chọn ghế dễ, quản lý rạp gọn.</h1>
-      <p className="hero-copy">
-        Khám phá phim đang chiếu, xem thông tin chi tiết và sẵn sàng cho trải nghiệm đặt vé.
-      </p>
-
-      <div className="hero-actions">
-        <Link className="button button-secondary" to="/movies">Xem phim</Link>
-        {isAuthenticated ? (
-          <>
-            <Link className="button" to={roleHome(user?.role)}>
-              Không gian {roleLabel(user?.role)}
-            </Link>
-            <span className="badge">{user?.role}</span>
-          </>
-        ) : (
-          <>
-            <Link className="button" to="/login">
-              Đăng nhập
-            </Link>
-            <Link className="button button-secondary" to="/register">
-              Tạo tài khoản
-            </Link>
-          </>
-        )}
-      </div>
-
-      <div className="feature-grid">
-        <article className="feature-card">
-          <h2>Lịch chiếu</h2>
-          <p>Danh sách và chi tiết phim công khai đã sẵn sàng.</p>
-        </article>
-        <article className="feature-card">
-          <h2>Đặt vé</h2>
-          <p>Giữ ghế 5 phút, chống đặt trùng bằng ràng buộc database.</p>
-        </article>
-        <article className="feature-card">
-          <h2>Thành viên</h2>
-          <p>Tích điểm sau thanh toán và quản lý vé điện tử.</p>
-        </article>
-      </div>
-    </section>
-  )
+export default function HomePage() {
+  const [state, setState] = useState({ loading: true, error: '', data: emptyHome() });
+  const load = () => { setState(current => ({ ...current, loading: true, error: '' })); fetchHome().then(data => setState({ loading: false, error: '', data })).catch(error => setState({ loading: false, error: error.message || 'Không thể tải trang chủ.', data: emptyHome() })); };
+  useEffect(() => { load(); }, []);
+  const { data } = state;
+  const banner = data.banners?.[0];
+  return <div className="min-h-screen bg-surface font-body-md text-body-md text-on-surface antialiased"><CinemaHeader /><main className="w-full bg-surface pb-20 pt-20 md:pb-0"><Hero banner={banner} featured={data.nowShowing?.[0]} /><section className="mx-auto max-w-7xl px-margin-mobile py-12 lg:px-margin"><SectionHeading eyebrow="Phim đang chiếu" title="Trải nghiệm điện ảnh hôm nay" to="/movies" /><MovieStrip movies={data.nowShowing} loading={state.loading} empty="Hiện chưa có phim đang chiếu trong hệ thống." /></section><section className="bg-surface-container-low py-12"><div className="mx-auto max-w-7xl px-margin-mobile lg:px-margin"><SectionHeading eyebrow="Lịch chiếu" title="Suất chiếu sắp tới" /><ShowtimeStrip items={data.showtimes} loading={state.loading} /></div></section><section className="mx-auto max-w-7xl px-margin-mobile py-12 lg:px-margin"><SectionHeading eyebrow="Sắp ra mắt" title="Phim sắp chiếu" to="/movies" /><MovieStrip movies={data.comingSoon} loading={state.loading} empty="Hiện chưa có phim sắp chiếu trong hệ thống." /></section><section className="bg-surface-container-low py-12"><div className="mx-auto max-w-7xl px-margin-mobile lg:px-margin"><SectionHeading eyebrow="Ưu đãi đặc biệt" title="Ưu đãi tại Cinema" to="/promotions" /><PromotionStrip items={data.promotions} loading={state.loading} /></div></section>{state.error && <section className="mx-auto max-w-7xl px-margin-mobile pb-12 lg:px-margin"><div className="rounded-2xl border border-error/40 bg-error-container/20 p-6"><p className="font-headline-sm font-bold text-error">Không thể tải một phần nội dung</p><p className="mt-2 text-on-surface-variant">{state.error}</p><button type="button" onClick={load} className="mt-4 rounded-xl bg-primary-container px-5 py-2.5 font-label-md font-bold text-on-primary">Thử lại</button></div></section>}</main><CinemaFooter /></div>;
 }
+
+function Hero({ banner, featured }) {
+  const target = featured?.id ? `/movies/${featured.id}` : null;
+  const title = banner?.title || featured?.title || 'Cinema';
+  const description = banner?.subtitle || featured?.synopsis || 'Khám phá những bộ phim đang được cập nhật tại Cinema.';
+  const image = banner?.imageUrl || featured?.backdropUrl || featured?.posterUrl;
+  return <section className="relative isolate min-h-[560px] overflow-hidden bg-surface-container-lowest"><div aria-hidden="true" className="absolute inset-0 scale-105 bg-cover bg-center opacity-40 mix-blend-screen" style={image ? { backgroundImage: `url(${image})` } : undefined} /><div className="absolute inset-0 bg-gradient-to-r from-surface via-surface/90 to-surface/20" /><div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_24%,rgba(255,69,162,.32),transparent_24%),radial-gradient(circle_at_16%_80%,rgba(227,170,0,.12),transparent_28%)]" /><div className="relative mx-auto flex min-h-[560px] max-w-7xl items-center px-margin-mobile py-16 lg:px-margin"><div className="max-w-2xl"><div className="inline-flex items-center gap-2 rounded-full bg-surface-container/90 px-3 py-1 font-label-sm uppercase tracking-wider text-primary"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary-container" />Dữ liệu từ hệ thống Cinema</div><h1 className="mt-5 font-display-lg text-display-lg-mobile font-extrabold tracking-tight text-on-surface md:text-display-lg">{title}</h1><p className="mt-4 max-w-xl font-body-lg text-on-surface-variant">{description}</p><div className="mt-8 flex flex-wrap gap-3">{target ? <Link to={target} className="rounded-xl bg-primary-container px-6 py-3 font-label-lg font-bold text-on-primary shadow-[0_0_16px_rgba(255,69,162,.4)]">Xem phim</Link> : <span className="rounded-xl bg-surface-container-high px-6 py-3 font-label-lg text-on-surface-variant">Chưa có phim để xem</span>}<Link to="/movies" className="rounded-xl bg-surface-container-high px-6 py-3 font-label-lg font-bold text-on-surface hover:bg-surface-bright">Xem tất cả phim</Link></div></div></div></section>;
+}
+
+function SectionHeading({ eyebrow, title, to }) { return <div className="mb-7 flex items-end justify-between gap-4"><div><p className="font-label-sm uppercase tracking-widest text-primary">{eyebrow}</p><h2 className="mt-2 font-headline-xl text-headline-xl-mobile font-extrabold md:text-headline-xl">{title}</h2></div>{to && <Link className="font-label-lg text-primary hover:text-primary-fixed" to={to}>Xem tất cả →</Link>}</div>; }
+
+function MovieStrip({ movies = [], loading, empty }) { if (loading) return <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">{[0,1,2,3].map(index => <div key={index} className="aspect-[2/3] animate-pulse rounded-2xl bg-surface-container" />)}</div>; if (!movies.length) return <Empty text={empty} />; return <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">{movies.map(movie => <StitchMovieCard key={movie.id} movie={movie} />)}</div>; }
+
+function ShowtimeStrip({ items = [], loading }) { if (loading) return <div className="grid gap-4 md:grid-cols-3">{[0,1,2].map(index => <div key={index} className="h-40 animate-pulse rounded-2xl bg-surface-container" />)}</div>; if (!items.length) return <Empty text="Chưa có suất chiếu hợp lệ để xem." />; return <div className="grid gap-4 md:grid-cols-3">{items.map(item => <Link key={item.id} to={`/movies/${item.movieId}`} className="rounded-2xl bg-surface-container p-5 transition-colors hover:bg-surface-container-high"><p className="font-headline-sm font-bold">{item.movieTitle}</p><p className="mt-4 text-3xl font-extrabold text-primary">{time.format(new Date(item.startsAt))}</p><p className="mt-2 font-body-sm text-on-surface-variant">{item.roomName} · {item.movieVersion}</p><p className="mt-4 font-label-sm text-primary">Xem chi tiết phim →</p></Link>)}</div>; }
+
+function PromotionStrip({ items = [], loading }) { if (loading) return <div className="grid gap-4 md:grid-cols-3">{[0,1,2].map(index => <div key={index} className="h-44 animate-pulse rounded-2xl bg-surface-container" />)}</div>; if (!items.length) return <Empty text="Hiện chưa có ưu đãi hiệu lực." />; return <div className="grid gap-4 md:grid-cols-3">{items.map(item => <article key={item.id} className="overflow-hidden rounded-2xl bg-surface-container"><div className="h-28 bg-surface-container-highest">{item.imageUrl && <img className="h-full w-full object-cover" src={item.imageUrl} alt="" onError={event => { event.currentTarget.style.display = 'none'; }} />}</div><div className="p-5"><p className="font-label-sm text-secondary">{item.discountType === 'PERCENT' ? `Giảm ${item.discountValue}%` : `Giảm ${item.discountValue}đ`}</p><h3 className="mt-2 font-headline-sm font-bold">{item.title}</h3><p className="mt-2 line-clamp-2 text-body-sm text-on-surface-variant">{item.description}</p></div></article>)}</div>; }
+function Empty({ text }) { return <div className="rounded-2xl bg-surface-container p-8 text-center text-on-surface-variant">{text}</div>; }
+function emptyHome() { return { banners: [], nowShowing: [], comingSoon: [], showtimes: [], promotions: [] }; }

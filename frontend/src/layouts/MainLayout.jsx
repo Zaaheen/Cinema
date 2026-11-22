@@ -15,15 +15,17 @@ export function MainLayout() {
     <div className="app-shell">
       <header className="site-header">
         <Link className="brand" to="/">
-          Cinema
+          <span className="brand-mark" aria-hidden="true">C</span>
+          <span>Cinema</span>
         </Link>
-        <nav className="site-nav">
+        <nav className="site-nav" aria-label="Điều hướng chính">
           <Link to="/">Trang chủ</Link>
           <Link to="/movies">Phim</Link>
           {isAuthenticated ? (
             <>
               <Link to={roleHome(user?.role)}>{roleLabel(user?.role)}</Link>
               {user?.role === 'MEMBER' ? <Link to="/account">Tài khoản</Link> : null}
+              {user?.role === 'MEMBER' ? <Link to="/booking">Đặt vé</Link> : null}
               <button type="button" className="link-button" onClick={handleLogout}>
                 Đăng xuất
               </button>
