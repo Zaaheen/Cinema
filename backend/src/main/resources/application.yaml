@@ -36,6 +36,12 @@ management:
         enabled: true
 
 app:
+  cloudinary:
+    cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+    api-key: ${CLOUDINARY_API_KEY:}
+    api-secret: ${CLOUDINARY_API_SECRET:}
+    connect-timeout: 3s
+    read-timeout: 10s
   jwt:
     issuer: cinema
     secret: ${JWT_SECRET:}

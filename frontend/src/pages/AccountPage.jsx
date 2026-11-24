@@ -4,122 +4,14 @@ import { useAuth } from '../auth/useAuth'
 import { getErrorMessage } from '../lib/errors'
 
 export function AccountPage() {
-  const { user, updateProfile, changePassword } = useAuth()
-  const navigate = useNavigate()
-  const [fullName, setFullName] = useState(user?.fullName ?? '')
-  const [email, setEmail] = useState(user?.email ?? '')
-  const [phone, setPhone] = useState(user?.phone ?? '')
-  const [currentPassword, setCurrentPassword] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [profileError, setProfileError] = useState(null)
-  const [passwordError, setPasswordError] = useState(null)
-  const [profileSaved, setProfileSaved] = useState(false)
-  const [isSavingProfile, setIsSavingProfile] = useState(false)
-  const [isChangingPassword, setIsChangingPassword] = useState(false)
-
-  if (!user) {
-    return null
-  }
-
-  const submitProfile = async (event) => {
-    event.preventDefault()
-    setProfileError(null)
-    setProfileSaved(false)
-    setIsSavingProfile(true)
-    try {
-      await updateProfile({
-        fullName: fullName.trim(),
-        email: email.trim() || null,
-        phone: phone.trim() || null,
-      })
-      setProfileSaved(true)
-    } catch (error) {
-      setProfileError(getErrorMessage(error))
-    } finally {
-      setIsSavingProfile(false)
-    }
-  }
-
-  const submitPassword = async (event) => {
-    event.preventDefault()
-    setPasswordError(null)
-    setIsChangingPassword(true)
-    try {
-      await changePassword({ currentPassword, newPassword })
-      navigate('/login', { replace: true })
-    } catch (error) {
-      setPasswordError(getErrorMessage(error))
-    } finally {
-      setIsChangingPassword(false)
-    }
-  }
-
-  return (
-    <section className="form-card">
-      <h1>Tài khoản</h1>
-      <dl className="detail-list">
-        <div>
-          <dt>Họ và tên</dt>
-          <dd>{user.fullName}</dd>
-        </div>
-        <div>
-          <dt>Tên đăng nhập</dt>
-          <dd>{user.username}</dd>
-        </div>
-        <div>
-          <dt>Email</dt>
-          <dd>{user.email ?? 'Chưa cập nhật'}</dd>
-        </div>
-        <div>
-          <dt>Số điện thoại</dt>
-          <dd>{user.phone ?? 'Chưa cập nhật'}</dd>
-        </div>
-        <div>
-          <dt>Vai trò</dt>
-          <dd>{user.role}</dd>
-        </div>
-        <div>
-          <dt>Mã thành viên</dt>
-          <dd>{user.memberCode ?? 'Không có'}</dd>
-        </div>
-      </dl>
-
-      <form onSubmit={submitProfile}>
-        <h2>Cập nhật hồ sơ</h2>
-        <label>
-          Họ và tên
-          <input value={fullName} onChange={(event) => setFullName(event.target.value)} maxLength="100" required />
-        </label>
-        <label>
-          Email
-          <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} maxLength="255" />
-        </label>
-        <label>
-          Số điện thoại
-          <input value={phone} onChange={(event) => setPhone(event.target.value)} inputMode="tel" />
-        </label>
-        {profileError ? <p className="form-error">{profileError}</p> : null}
-        {profileSaved ? <p className="muted">Đã cập nhật hồ sơ.</p> : null}
-        <button type="submit" className="button" disabled={isSavingProfile}>
-          {isSavingProfile ? 'Đang lưu...' : 'Lưu hồ sơ'}
-        </button>
-      </form>
-
-      <form onSubmit={submitPassword}>
-        <h2>Đổi mật khẩu</h2>
-        <label>
-          Mật khẩu hiện tại
-          <input type="password" autoComplete="current-password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} required />
-        </label>
-        <label>
-          Mật khẩu mới
-          <input type="password" autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} minLength="8" maxLength="72" required />
-        </label>
-        {passwordError ? <p className="form-error">{passwordError}</p> : null}
-        <button type="submit" className="button" disabled={isChangingPassword}>
-          {isChangingPassword ? 'Đang đổi mật khẩu...' : 'Đổi mật khẩu'}
-        </button>
-      </form>
-    </section>
-  )
+  const { user, updateProfile, changePassword } = useAuth(); const navigate = useNavigate()
+  const [fullName, setFullName] = useState(user?.fullName ?? ''); const [email, setEmail] = useState(user?.email ?? ''); const [phone, setPhone] = useState(user?.phone ?? ''); const [currentPassword, setCurrentPassword] = useState(''); const [newPassword, setNewPassword] = useState('')
+  const [profileError, setProfileError] = useState(''); const [passwordError, setPasswordError] = useState(''); const [profileSaved, setProfileSaved] = useState(false); const [isSavingProfile, setIsSavingProfile] = useState(false); const [isChangingPassword, setIsChangingPassword] = useState(false)
+  if (!user) return null
+  const submitProfile = async (event) => { event.preventDefault(); setProfileError(''); setProfileSaved(false); setIsSavingProfile(true); try { await updateProfile({ fullName: fullName.trim(), email: email.trim() || null, phone: phone.trim() || null }); setProfileSaved(true) } catch (error) { setProfileError(getErrorMessage(error)) } finally { setIsSavingProfile(false) } }
+  const submitPassword = async (event) => { event.preventDefault(); setPasswordError(''); setIsChangingPassword(true); try { await changePassword({ currentPassword, newPassword }); navigate('/login', { replace: true }) } catch (error) { setPasswordError(getErrorMessage(error)) } finally { setIsChangingPassword(false) } }
+  return <section className="mx-auto max-w-7xl px-margin-mobile py-10 lg:px-margin lg:py-14"><p className="font-label-sm uppercase tracking-[.16em] text-primary">Tài khoản Cinema</p><div className="mt-3 flex flex-col justify-between gap-3 border-b border-surface-container-high pb-7 sm:flex-row sm:items-end"><div><h1 className="font-display-lg text-4xl font-extrabold">Hồ sơ của tôi</h1><p className="mt-2 text-on-surface-variant">Quản lý thông tin cá nhân và bảo mật tài khoản.</p></div><span className="rounded-full bg-primary-container/15 px-3 py-1.5 font-label-md font-bold text-primary">Thành viên</span></div><div className="mt-8 grid gap-6 lg:grid-cols-[.8fr,1.2fr]"><aside className="rounded-2xl border border-surface-container-high bg-surface-container-low p-6"><span className="grid h-14 w-14 place-items-center rounded-full bg-primary-container text-xl font-bold text-on-primary">{(user.fullName || user.username || '?').slice(0, 1).toUpperCase()}</span><h2 className="mt-4 font-headline-md font-bold">{user.fullName || user.username}</h2><p className="mt-1 text-on-surface-variant">@{user.username}</p><dl className="mt-7 space-y-4 border-t border-surface-container-high pt-5 text-body-sm"><Info label="Email" value={user.email || 'Chưa cập nhật'} /><Info label="Số điện thoại" value={user.phone || 'Chưa cập nhật'} /><Info label="Mã thành viên" value={user.memberCode || 'Chưa có'} /></dl></aside><div className="space-y-6"><form className="rounded-2xl border border-surface-container-high bg-surface-container-low p-6 sm:p-7" onSubmit={submitProfile}><h2 className="font-headline-md font-bold">Cập nhật hồ sơ</h2><p className="mt-1 text-on-surface-variant">Thông tin này được lưu vào tài khoản Cinema của bạn.</p><div className="mt-6 grid gap-4 sm:grid-cols-2"><Field id="profile-name" label="Họ và tên" value={fullName} onChange={(event) => setFullName(event.target.value)} maxLength="100" required /><Field id="profile-email" label="Email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} maxLength="255" /><Field id="profile-phone" label="Số điện thoại" value={phone} onChange={(event) => setPhone(event.target.value)} inputMode="tel" /></div><Notice error={profileError} success={profileSaved ? 'Đã cập nhật hồ sơ.' : ''} /><button type="submit" className="mt-6 rounded-xl bg-primary-container px-5 py-3 font-label-lg font-bold text-on-primary disabled:opacity-70" disabled={isSavingProfile}>{isSavingProfile ? 'Đang lưu...' : 'Lưu hồ sơ'}</button></form><form className="rounded-2xl border border-surface-container-high bg-surface-container-low p-6 sm:p-7" onSubmit={submitPassword}><h2 className="font-headline-md font-bold">Đổi mật khẩu</h2><p className="mt-1 text-on-surface-variant">Sau khi đổi mật khẩu, bạn sẽ cần đăng nhập lại.</p><div className="mt-6 grid gap-4 sm:grid-cols-2"><Field id="current-password" label="Mật khẩu hiện tại" type="password" autoComplete="current-password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} required /><Field id="new-password" label="Mật khẩu mới" type="password" autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} minLength="8" maxLength="72" required /></div><Notice error={passwordError} /><button type="submit" className="mt-6 rounded-xl border border-primary px-5 py-3 font-label-lg font-bold text-primary disabled:opacity-70" disabled={isChangingPassword}>{isChangingPassword ? 'Đang đổi mật khẩu...' : 'Đổi mật khẩu'}</button></form></div></div></section>
 }
+function Field({ id, label, type = 'text', ...props }) { return <div><label className="mb-1.5 block font-label-md font-medium" htmlFor={id}>{label}</label><input id={id} type={type} className="w-full rounded-lg border border-surface-container-highest bg-surface-container-lowest px-4 py-3 text-[16px] text-on-surface outline-none transition focus:border-primary-container focus:ring-1 focus:ring-primary-container" {...props} /></div> }
+function Info({ label, value }) { return <div><dt className="font-label-sm uppercase tracking-wider text-outline">{label}</dt><dd className="mt-1 break-words text-on-surface">{value}</dd></div> }
+function Notice({ error, success }) { if (!error && !success) return null; return <p className={`mt-5 rounded-lg p-3 text-sm ${error ? 'border border-error/50 bg-error-container/30 text-error' : 'bg-primary-container/15 text-primary'}`} role={error ? 'alert' : 'status'}>{error || success}</p> }

@@ -4,16 +4,26 @@ import java.time.Duration;
 import java.util.Optional;
 import com.cinema.common.PageResponse;
 import com.cinema.dto.catalog.MovieDetailResponse;
+import com.cinema.dto.catalog.BannerResponse;
+import com.cinema.dto.catalog.HomeResponse;
+import com.cinema.dto.catalog.HomeShowtimeResponse;
 import com.cinema.dto.catalog.MovieSummaryResponse;
 import com.cinema.dto.catalog.PromotionResponse;
 import com.cinema.dto.catalog.ShowtimeResponse;
+import com.cinema.dto.catalog.SeatMapResponse;
 import com.cinema.dto.catalog.TicketPriceResponse;
 import com.cinema.entity.Movie;
+import com.cinema.entity.BookingSeat;
+import com.cinema.entity.Seat;
+import com.cinema.entity.Showtime;
 import com.cinema.exception.BusinessException;
 import com.cinema.repository.MovieRepository;
+import com.cinema.repository.BannerRepository;
 import com.cinema.repository.PromotionRepository;
 import com.cinema.repository.SeatPriceRepository;
 import com.cinema.repository.ShowtimeRepository;
+import com.cinema.repository.SeatRepository;
+import com.cinema.repository.BookingSeatRepository;
 import com.cinema.service.CatalogService;
 
 import java.time.Instant;
@@ -21,6 +31,9 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.PageRequest;
@@ -37,20 +50,29 @@ public class CatalogServiceImpl implements CatalogService {
             ZoneId.of("Asia/Ho_Chi_Minh");
 
     private final MovieRepository movieRepository;
+    private final BannerRepository bannerRepository;
     private final PromotionRepository promotionRepository;
     private final SeatPriceRepository seatPriceRepository;
     private final ShowtimeRepository showtimeRepository;
+    private final SeatRepository seatRepository;
+    private final BookingSeatRepository bookingSeatRepository;
 
     public CatalogServiceImpl(
             MovieRepository movieRepository,
+            BannerRepository bannerRepository,
             PromotionRepository promotionRepository,
             SeatPriceRepository seatPriceRepository,
-            ShowtimeRepository showtimeRepository
+            ShowtimeRepository showtimeRepository,
+            SeatRepository seatRepository,
+            BookingSeatRepository bookingSeatRepository
     ) {
         this.movieRepository = movieRepository;
+        this.bannerRepository = bannerRepository;
         this.promotionRepository = promotionRepository;
         this.seatPriceRepository = seatPriceRepository;
         this.showtimeRepository = showtimeRepository;
+        this.seatRepository = seatRepository;
+        this.bookingSeatRepository = bookingSeatRepository;
     }
 
     @Override
@@ -123,10 +145,16 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
-    public List<TicketPriceResponse> ticketPrices() {
-        return seatPriceRepository.findEffectiveOn(
-                        LocalDate.now(CINEMA_ZONE)
-                )
+    public PromotionResponse promotion(Long promotionId) {
+        return promotionRepository.findPublishedById(promotionId, Instant.now())
+                .map(PromotionResponse::from)
+                .orElseThrow(() -> BusinessException.notFound("Không tìm thấy khuyến mãi"));
+    }
+
+    @Override
+    public List<TicketPriceResponse> ticketPrices(LocalDate effectiveOn) {
+        LocalDate requestedDate = effectiveOn == null ? LocalDate.now(CINEMA_ZONE) : effectiveOn;
+        return seatPriceRepository.findPublicEffectiveOn(requestedDate)
                 .stream()
                 .map(TicketPriceResponse::from)
                 .toList();
@@ -184,5 +212,67 @@ public class CatalogServiceImpl implements CatalogService {
                 .stream()
                 .map(ShowtimeResponse::from)
                 .toList();
+    }
+
+    @Override
+    public SeatMapResponse seatMap(Long showtimeId, String memberUsername) {
+        Showtime showtime = showtimeRepository.findById(showtimeId)
+                .orElseThrow(() -> BusinessException.notFound("Không tìm thấy suất chiếu"));
+        Instant now = Instant.now();
+        boolean salesOpen = isSalesOpen(showtime, now);
+        Map<Long, BookingSeat> activeSeats = bookingSeatRepository.findActiveForSeatMap(showtimeId, now)
+                .stream()
+                .collect(Collectors.toMap(item -> item.getSeat().getId(), item -> item));
+        List<SeatMapResponse.SeatMapSeatResponse> seats = seatRepository
+                .findByRoomIdOrderByRowLabelAscSeatNumberAsc(showtime.getRoom().getId())
+                .stream()
+                .map(seat -> seatResponse(seat, activeSeats.get(seat.getId()), memberUsername, salesOpen))
+                .toList();
+        return new SeatMapResponse(
+                new SeatMapResponse.ShowtimeSeatMapResponse(
+                        showtime.getId(), showtime.getMovie().getTitle(), showtime.getRoom().getName(),
+                        showtime.getStartsAt(), showtime.getEndsAt(), showtime.getStatus()),
+                now,
+                salesOpen,
+                seats);
+    }
+
+    private boolean isSalesOpen(Showtime showtime, Instant now) {
+        return "SCHEDULED".equals(showtime.getStatus())
+                && "ACTIVE".equals(showtime.getRoom().getStatus())
+                && Set.of("NOW_SHOWING", "COMING_SOON").contains(showtime.getMovie().getStatus())
+                && showtime.getStartsAt().isAfter(now.plus(Duration.ofMinutes(30)));
+    }
+
+    private SeatMapResponse.SeatMapSeatResponse seatResponse(
+            Seat seat, BookingSeat bookingSeat, String memberUsername, boolean salesOpen
+    ) {
+        String availability;
+        if (!salesOpen) {
+            availability = "NOT_FOR_SALE";
+        } else if (!"AVAILABLE".equals(seat.getStatus())) {
+            availability = "UNAVAILABLE";
+        } else if (bookingSeat == null) {
+            availability = "AVAILABLE";
+        } else if ("CONFIRMED".equals(bookingSeat.getStatus())) {
+            availability = "SOLD";
+        } else if (memberUsername != null
+                && memberUsername.equals(bookingSeat.getBooking().getMember().getUser().getUsername())) {
+            availability = "OWN_HELD";
+        } else {
+            availability = "HELD";
+        }
+        return new SeatMapResponse.SeatMapSeatResponse(
+                seat.getId(), seat.getRowLabel(), seat.getSeatNumber(), seat.getSeatType(), availability);
+    }
+
+    @Override public HomeResponse home() {
+        Instant now = Instant.now();
+        return new HomeResponse(
+                bannerRepository.findByActiveTrueOrderByDisplayOrderAscIdAsc().stream().map(BannerResponse::from).toList(),
+                movieRepository.findByStatusOrderByReleaseDateDescIdDesc("NOW_SHOWING").stream().map(MovieSummaryResponse::from).toList(),
+                movieRepository.findByStatusOrderByReleaseDateAscIdAsc("COMING_SOON").stream().map(MovieSummaryResponse::from).toList(),
+                showtimeRepository.findBookableFrom(now).stream().map(HomeShowtimeResponse::from).toList(),
+                promotionRepository.findPublished(now).stream().map(PromotionResponse::from).toList());
     }
 }

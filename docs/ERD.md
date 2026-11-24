@@ -10,7 +10,7 @@
 | `roles` | `id`, `code`, `name` | Vai trò: khách thành viên, nhân viên, quản lý/Admin; cách mô hình khách chưa đăng nhập cần thiết kế riêng |
 | `members` | `id`, `user_id`, `member_code`, `birth_date`, `gender`, `address`, `identity_number` | Hồ sơ thành viên và thông tin tài khoản theo SRS |
 | `point_transactions` | `id`, `member_id`, `booking_id` nullable, `type`, `points_delta`, `description`, `created_at` | Sổ giao dịch cộng/sử dụng điểm; không chỉ lưu mỗi tổng điểm |
-| `movies` | `id`, `title`, `genre`, `release_date`, `duration_minutes`, `version`, `cast_text`, `director`, `studio`, `synopsis`, `trailer_url`, `poster_url`, `status` | Danh mục phim và chi tiết phim |
+| `movies` | `id`, `title`, `genre`, `release_date`, `duration_minutes`, `version`, `cast_text`, `director`, `studio`, `synopsis`, `trailer_url`, `poster_url`, `backdrop_url`, `status` | Danh mục phim, chi tiết và ảnh banner trang chủ |
 | `rooms` | `id`, `name`, `status` | Phòng chiếu |
 | `seats` | `id`, `room_id`, `row_label`, `seat_number`, `seat_type`, `status` | Sơ đồ ghế; unique `(room_id, row_label, seat_number)` |
 | `showtimes` | `id`, `movie_id`, `room_id`, `starts_at`, `ends_at`, `status` | Suất chiếu cụ thể của phim tại phòng |
@@ -46,6 +46,7 @@
 7. Không xóa cứng phim/phòng/khuyến mãi đã có dữ liệu nghiệp vụ liên quan nếu điều đó phá lịch sử; cân nhắc `status`/soft delete.
 8. Mọi tiền tệ dùng kiểu decimal phù hợp, không dùng floating point.
 9. Thời gian lưu thống nhất; API trả ISO-8601 có timezone. Hiển thị theo múi giờ Việt Nam.
+10. **Bảo vệ phòng chiếu — IMPLEMENTED (V8):** PostgreSQL `btree_gist` và exclusion constraint `ex_showtimes_active_room_occupied` ngăn hai suất `SCHEDULED`/`ONGOING` cùng phòng có occupied range giao nhau. Occupied range là `[starts_at, ends_at + 15 phút)`; đúng 15 phút chuyển phòng được phép, ngắn hơn bị từ chối. `FINISHED`/`CANCELLED` không chiếm phòng. Constraint là nguồn bảo vệ cạnh tranh cho insert/update; V8 không tự sửa dữ liệu lịch sử và cần preflight/maintenance window trước deployment.
 
 ## 5. Quyết định đã chốt và các mục còn mở
 Đã chốt cho bản thiết kế:

@@ -26,4 +26,6 @@ public class Promotion {
     @Column(name = "starts_at", nullable = false) private Instant startsAt;
     @Column(name = "ends_at", nullable = false) private Instant endsAt;
     @Column(nullable = false) private String status;
+    @Column(name = "image_url") private String imageUrl;
+    @Column(name = "source_key") private String sourceKey;
 }

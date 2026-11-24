@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   changePasswordRequest,
   loginRequest,
@@ -15,6 +15,7 @@ let sessionBootstrap = null
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const sessionVersion = useRef(0)
 
   const applyAuth = useCallback((result) => {
     tokenStore.set(result.accessToken)
@@ -28,6 +29,7 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(
     async (username, password) => {
+      sessionVersion.current += 1
       const result = await loginRequest(username, password)
       sessionBootstrap = null
       applyAuth(result)
@@ -38,6 +40,7 @@ export function AuthProvider({ children }) {
 
   const register = useCallback(
     async (payload) => {
+      sessionVersion.current += 1
       const result = await registerRequest(payload)
       sessionBootstrap = null
       applyAuth(result)
@@ -47,6 +50,7 @@ export function AuthProvider({ children }) {
   )
 
   const logout = useCallback(async () => {
+    sessionVersion.current += 1
     try {
       await logoutRequest()
     } finally {
@@ -62,6 +66,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   const changePassword = useCallback(async (payload) => {
+    sessionVersion.current += 1
     await changePasswordRequest(payload)
     sessionBootstrap = null
     clearAuth()
@@ -77,16 +82,17 @@ export function AuthProvider({ children }) {
     let cancelled = false
 
     const bootstrap = async () => {
+      const version = sessionVersion.current
       try {
         if (!sessionBootstrap) {
           sessionBootstrap = refreshRequest()
         }
         const result = await sessionBootstrap
-        if (!cancelled) {
+        if (!cancelled && version === sessionVersion.current) {
           applyAuth(result)
         }
       } catch {
-        if (!cancelled) {
+        if (!cancelled && version === sessionVersion.current) {
           clearAuth()
         }
       } finally {
@@ -99,6 +105,7 @@ export function AuthProvider({ children }) {
     void bootstrap()
 
     const onForcedLogout = () => {
+      sessionVersion.current += 1
       sessionBootstrap = null
       clearAuth()
     }

@@ -26,6 +26,11 @@ export async function fetchMe() {
   return data.data
 }
 
+export async function fetchMemberProfile() {
+  const { data } = await apiClient.get('/members/me')
+  return data.data
+}
+
 export async function updateProfileRequest(payload) {
   const { data } = await apiClient.patch('/members/me', payload)
   return data.data

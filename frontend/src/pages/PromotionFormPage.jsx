@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import {
@@ -7,6 +7,7 @@ import {
     createPromotion,
     updatePromotion,
 } from '../api/promotionAdmin'
+import { getErrorMessage } from '../lib/errors'
 
 const EMPTY_FORM = {
     title: '',
@@ -17,6 +18,8 @@ const EMPTY_FORM = {
     endsAt: '',
     status: 'ACTIVE',
 }
+
+const FIELD_IDS = { title: 'promotion-title', discountValue: 'promotion-value', startsAt: 'promotion-start', endsAt: 'promotion-end' }
 
 function formatDateTime(value) {
     if (!value) return ''
@@ -35,27 +38,35 @@ export function PromotionFormPage() {
     const isEditing = Boolean(id)
 
     const [form, setForm] = useState(EMPTY_FORM)
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(isEditing)
+    const [loadError, setLoadError] = useState('')
+    const [fieldErrors, setFieldErrors] = useState({})
+    const [submitError, setSubmitError] = useState('')
+    const [loadAttempt, setLoadAttempt] = useState(0)
+    const [initialForm, setInitialForm] = useState(EMPTY_FORM)
+    const [reviewReady, setReviewReady] = useState(false)
+    const reviewRef = useRef(null)
+    const saveInFlight = useRef(false)
+    const isDirty = JSON.stringify(form) !== JSON.stringify(initialForm)
 
     useEffect(() => {
-        if (isEditing) {
-            loadPromotion()
-        }
-    }, [id])
+        if (!isDirty || loading) return undefined
+        const warn = (event) => { event.preventDefault(); event.returnValue = '' }
+        window.addEventListener('beforeunload', warn)
+        return () => window.removeEventListener('beforeunload', warn)
+    }, [isDirty, loading])
 
-    async function loadPromotion() {
-        try {
-            setLoading(true)
-
-            const promotion = await getPromotionById(id)
-
+    useEffect(() => {
+        if (!isEditing) return undefined
+        let active = true
+        getPromotionById(id).then((promotion) => {
+            if (!active) return
             if (!promotion) {
                 toast.error('Không tìm thấy khuyến mãi!')
                 navigate('/admin/promotions')
                 return
             }
-
-            setForm({
+            const nextForm = {
                 title: promotion.title || '',
                 description: promotion.description || '',
                 discountType: promotion.discountType || 'PERCENT',
@@ -63,56 +74,68 @@ export function PromotionFormPage() {
                 startsAt: formatDateTime(promotion.startsAt),
                 endsAt: formatDateTime(promotion.endsAt),
                 status: promotion.status || 'ACTIVE',
-            })
-        } catch (error) {
-            toast.error(
-                error.response?.data?.message ||
-                'Không tải được thông tin khuyến mãi!'
-            )
-        } finally {
+            }
+            setForm(nextForm)
+            setInitialForm(nextForm)
             setLoading(false)
-        }
+        }).catch((error) => {
+            if (active) {
+                setLoadError(getErrorMessage(error))
+                setLoading(false)
+            }
+        })
+        return () => { active = false }
+    }, [id, isEditing, navigate, loadAttempt])
+
+    function retryLoad() {
+        setLoadError('')
+        setLoading(true)
+        setLoadAttempt((attempt) => attempt + 1)
     }
 
     function handleChange(event) {
         const { name, value } = event.target
 
-        setForm({
-            ...form,
-            [name]: value,
-        })
+        setForm((current) => ({ ...current, [name]: value }))
+        setFieldErrors((current) => ({
+            ...current,
+            [name]: '',
+            ...(name === 'discountType' ? { discountValue: '' } : {}),
+            ...(name === 'startsAt' ? { endsAt: '' } : {}),
+        }))
+        setSubmitError('')
+        setReviewReady(false)
     }
 
-    async function handleSubmit(event) {
+    function handleSubmit(event) {
         event.preventDefault()
 
-        if (!form.title.trim()) {
-            toast.error('Vui lòng nhập tên khuyến mãi!')
+        const errors = {}
+        if (!form.title.trim()) errors.title = 'Nhập tên khuyến mãi.'
+        if (!form.discountValue || !Number.isFinite(Number(form.discountValue)) || Number(form.discountValue) <= 0) {
+            errors.discountValue = 'Giá trị phải lớn hơn 0.'
+        } else if (form.discountType === 'PERCENT' && Number(form.discountValue) > 100) {
+            errors.discountValue = 'Mức giảm phần trăm tối đa là 100%.'
+        }
+        if (!form.startsAt) errors.startsAt = 'Chọn thời điểm bắt đầu.'
+        else if (!Number.isFinite(Date.parse(form.startsAt))) errors.startsAt = 'Thời điểm bắt đầu không hợp lệ.'
+        if (!form.endsAt) errors.endsAt = 'Chọn thời điểm kết thúc.'
+        else if (!Number.isFinite(Date.parse(form.endsAt))) errors.endsAt = 'Thời điểm kết thúc không hợp lệ.'
+        if (!errors.startsAt && !errors.endsAt && new Date(form.endsAt) <= new Date(form.startsAt)) {
+            errors.endsAt = 'Thời điểm kết thúc phải sau thời điểm bắt đầu.'
+        }
+        setFieldErrors(errors)
+        if (Object.keys(errors).length) {
+            document.getElementById(FIELD_IDS[Object.keys(errors)[0]])?.focus()
             return
         }
 
-        if (!form.discountValue || Number(form.discountValue) <= 0) {
-            toast.error('Giá trị ưu đãi phải lớn hơn 0!')
-            return
-        }
+        setReviewReady(true)
+        requestAnimationFrame(() => reviewRef.current?.focus())
+    }
 
-        if (
-            form.discountType === 'PERCENT' &&
-            Number(form.discountValue) > 100
-        ) {
-            toast.error('Mức giảm phần trăm không được vượt quá 100%!')
-            return
-        }
-
-        if (!form.startsAt || !form.endsAt) {
-            toast.error('Vui lòng chọn ngày bắt đầu và ngày kết thúc!')
-            return
-        }
-
-        if (new Date(form.endsAt) <= new Date(form.startsAt)) {
-            toast.error('Ngày kết thúc phải sau ngày bắt đầu!')
-            return
-        }
+    async function savePromotion() {
+        if (!reviewReady || saveInFlight.current) return
 
         const payload = {
             ...form,
@@ -122,6 +145,7 @@ export function PromotionFormPage() {
         }
 
         try {
+            saveInFlight.current = true
             setLoading(true)
 
             if (isEditing) {
@@ -134,120 +158,108 @@ export function PromotionFormPage() {
 
             navigate('/admin/promotions')
         } catch (error) {
-            toast.error(
-                error.response?.data?.message ||
-                'Lưu khuyến mãi thất bại!'
-            )
+            setSubmitError(error.response?.data?.message || 'Lưu khuyến mãi thất bại. Vui lòng thử lại.')
         } finally {
+            saveInFlight.current = false
             setLoading(false)
         }
     }
 
-    if (loading && isEditing && !form.title) {
-        return <p className="page-status">Đang tải thông tin...</p>
+    function leaveForm() {
+        if (!isDirty || window.confirm('Bạn có thay đổi chưa lưu. Rời khỏi trang?')) navigate('/admin/promotions')
     }
 
+    if (loading && isEditing && !form.title) {
+        return <p className="admin-promotion__state" role="status">Đang tải thông tin khuyến mãi…</p>
+    }
+
+    if (loadError) return <section className="admin-promotion admin-promotion__empty" role="alert">
+        <h2>Không thể tải khuyến mãi</h2><p>{loadError}</p>
+        <button type="button" onClick={retryLoad}>Thử lại</button>
+    </section>
+
     return (
-        <section className="role-dashboard">
-            <p className="eyebrow">QUẢN TRỊ</p>
+        <section className="admin-promotion" aria-labelledby="promotion-form-title">
+            <header className="admin-promotion__header">
+                <div>
+                    <p className="eyebrow">Khuyến mãi</p>
+                    <h2 id="promotion-form-title">{isEditing ? 'Chỉnh sửa khuyến mãi' : 'Thêm khuyến mãi'}</h2>
+                    <p>Nhập thông tin, kiểm tra mức giảm và thời gian trước khi công bố.</p>
+                </div>
+            </header>
 
-            <h1>
-                {isEditing ? 'Chỉnh sửa khuyến mãi' : 'Thêm khuyến mãi'}
-            </h1>
-
-            <form className="feature-card" onSubmit={handleSubmit}>
-                <p>
-                    <label>Tên khuyến mãi</label>
-                    <input
-                        name="title"
-                        value={form.title}
-                        onChange={handleChange}
-                        required
-                    />
-                </p>
-
-                <p>
-                    <label>Mô tả</label>
-                    <textarea
-                        name="description"
-                        value={form.description}
-                        onChange={handleChange}
-                    />
-                </p>
-
-                <p>
-                    <label>Loại khuyến mãi</label>
-                    <select
-                        name="discountType"
-                        value={form.discountType}
-                        onChange={handleChange}
-                    >
-                        <option value="PERCENT">Giảm theo phần trăm</option>
-                        <option value="FIXED">Giảm số tiền</option>
-                    </select>
-                </p>
-
-                <p>
-                    <label>Giá trị ưu đãi</label>
-                    <input
-                        type="number"
-                        name="discountValue"
-                        value={form.discountValue}
-                        onChange={handleChange}
-                        min="0.01"
-                        step="any"
-                        required
-                    />
-                </p>
-
-                <p>
-                    <label>Ngày bắt đầu</label>
-                    <input
-                        type="datetime-local"
-                        name="startsAt"
-                        value={form.startsAt}
-                        onChange={handleChange}
-                        required
-                    />
-                </p>
-
-                <p>
-                    <label>Ngày kết thúc</label>
-                    <input
-                        type="datetime-local"
-                        name="endsAt"
-                        value={form.endsAt}
-                        onChange={handleChange}
-                        required
-                    />
-                </p>
-
-                <p>
-                    <label>Trạng thái</label>
-                    <select
-                        name="status"
-                        value={form.status}
-                        onChange={handleChange}
-                    >
-                        <option value="ACTIVE">Hoạt động</option>
-                        <option value="INACTIVE">Ngừng hoạt động</option>
-                    </select>
-                </p>
-
-                <button type="submit" disabled={loading}>
-                    {loading
-                        ? 'Đang lưu...'
-                        : isEditing
-                            ? 'Cập nhật'
-                            : 'Thêm khuyến mãi'}
-                </button>
-
-                <button
-                    type="button"
-                    onClick={() => navigate('/admin/promotions')}
-                >
-                    Quay lại
-                </button>
+            <form className="admin-promotion__card admin-promotion__form" onSubmit={handleSubmit} noValidate>
+                {reviewReady ? <section className="admin-editor-review" tabIndex={-1} ref={reviewRef} aria-labelledby="promotion-review-title">
+                    <p className="admin-editor-review__eyebrow">Kiểm tra trước khi lưu</p><h3 id="promotion-review-title">{isEditing ? 'Xác nhận cập nhật ưu đãi' : 'Xác nhận tạo ưu đãi'}</h3>
+                    <p>Đối chiếu mức giảm và khoảng thời gian. Ưu đãi hoạt động có thể hiển thị công khai khi đến thời gian áp dụng.</p>
+                    <dl>
+                        <div><dt>Tên chương trình</dt><dd>{form.title.trim()}</dd></div>
+                        <div><dt>Mô tả</dt><dd>{form.description.trim() || 'Chưa nhập'}</dd></div>
+                        <div><dt>Giá trị ưu đãi</dt><dd>{form.discountType === 'PERCENT' ? `${form.discountValue}%` : `${Number(form.discountValue).toLocaleString('vi-VN')} ₫`}</dd></div>
+                        <div><dt>Bắt đầu</dt><dd>{form.startsAt.replace('T', ' ')}</dd></div>
+                        <div><dt>Kết thúc</dt><dd>{form.endsAt.replace('T', ' ')}</dd></div>
+                        <div><dt>Trạng thái</dt><dd>{form.status === 'ACTIVE' ? 'Hoạt động' : 'Ngừng hoạt động'}</dd></div>
+                    </dl>
+                    {form.status === 'ACTIVE' && <p className="admin-editor-review__warning">Trạng thái hoạt động sẽ cho phép ưu đãi xuất hiện công khai trong khoảng thời gian đã chọn.</p>}
+                </section> : <div className="admin-promotion__form-fields">
+                <div className="admin-promotion__form-intro">
+                    <div><h3>Thông tin chương trình</h3><p>Tên và mô tả sẽ giúp nhận biết ưu đãi trong danh sách.</p></div>
+                </div>
+                <div className="admin-promotion__grid">
+                    <label className="admin-promotion__field admin-promotion__field--wide" htmlFor="promotion-title">
+                        Tên khuyến mãi
+                        <input id="promotion-title" name="title" value={form.title} onChange={handleChange} aria-invalid={Boolean(fieldErrors.title)} aria-describedby={fieldErrors.title ? 'promotion-title-error' : undefined} required />
+                        {fieldErrors.title ? <span className="admin-promotion__field-error" id="promotion-title-error">{fieldErrors.title}</span> : null}
+                    </label>
+                    <label className="admin-promotion__field admin-promotion__field--wide" htmlFor="promotion-description">
+                        Mô tả
+                        <textarea id="promotion-description" name="description" value={form.description} onChange={handleChange} />
+                    </label>
+                </div>
+                <div className="admin-promotion__form-intro">
+                    <div><h3>Giá trị ưu đãi</h3><p>Chọn loại giảm giá rồi nhập giá trị tương ứng.</p></div>
+                </div>
+                <div className="admin-promotion__grid">
+                    <label className="admin-promotion__field" htmlFor="promotion-type">
+                        Loại khuyến mãi
+                        <select id="promotion-type" name="discountType" value={form.discountType} onChange={handleChange}>
+                            <option value="PERCENT">Giảm theo phần trăm</option>
+                            <option value="FIXED">Giảm số tiền</option>
+                        </select>
+                    </label>
+                    <label className="admin-promotion__field" htmlFor="promotion-value">
+                        Giá trị ưu đãi ({form.discountType === 'PERCENT' ? '%' : '₫'})
+                        <input id="promotion-value" type="number" name="discountValue" value={form.discountValue} onChange={handleChange} min="0.01" max={form.discountType === 'PERCENT' ? 100 : undefined} step="any" inputMode="decimal" aria-invalid={Boolean(fieldErrors.discountValue)} aria-describedby={fieldErrors.discountValue ? 'promotion-value-error' : 'promotion-value-hint'} required />
+                        {fieldErrors.discountValue ? <span className="admin-promotion__field-error" id="promotion-value-error">{fieldErrors.discountValue}</span> : <span className="admin-promotion__hint" id="promotion-value-hint">{form.discountType === 'PERCENT' ? 'Nhập từ trên 0 đến 100.' : 'Nhập số tiền giảm bằng đồng Việt Nam.'}</span>}
+                    </label>
+                </div>
+                <div className="admin-promotion__form-intro">
+                    <div><h3>Thời gian và trạng thái</h3><p>Thời điểm kết thúc phải sau thời điểm bắt đầu.</p></div>
+                </div>
+                <div className="admin-promotion__grid">
+                    <label className="admin-promotion__field" htmlFor="promotion-start">
+                        Ngày bắt đầu
+                        <input id="promotion-start" type="datetime-local" name="startsAt" value={form.startsAt} onChange={handleChange} aria-invalid={Boolean(fieldErrors.startsAt)} aria-describedby={fieldErrors.startsAt ? 'promotion-start-error' : undefined} required />
+                        {fieldErrors.startsAt ? <span className="admin-promotion__field-error" id="promotion-start-error">{fieldErrors.startsAt}</span> : null}
+                    </label>
+                    <label className="admin-promotion__field" htmlFor="promotion-end">
+                        Ngày kết thúc
+                        <input id="promotion-end" type="datetime-local" name="endsAt" value={form.endsAt} onChange={handleChange} aria-invalid={Boolean(fieldErrors.endsAt)} aria-describedby={fieldErrors.endsAt ? 'promotion-end-error' : undefined} required />
+                        {fieldErrors.endsAt ? <span className="admin-promotion__field-error" id="promotion-end-error">{fieldErrors.endsAt}</span> : null}
+                    </label>
+                    <label className="admin-promotion__field" htmlFor="promotion-status">
+                        Trạng thái
+                        <select id="promotion-status" name="status" value={form.status} onChange={handleChange}>
+                            <option value="ACTIVE">Hoạt động</option>
+                            <option value="INACTIVE">Ngừng hoạt động</option>
+                        </select>
+                    </label>
+                </div>
+                </div>}
+                {submitError ? <p className="admin-promotion__submit-error" role="alert">{submitError}</p> : null}
+                <div className="admin-promotion__actions">
+                    {reviewReady ? <><button type="button" disabled={loading} onClick={() => setReviewReady(false)}>Quay lại chỉnh sửa</button><button type="button" className="price-admin__primary" disabled={loading} onClick={savePromotion}>{loading ? 'Đang lưu…' : isEditing ? 'Xác nhận cập nhật' : 'Xác nhận tạo ưu đãi'}</button></> : <><button type="button" onClick={leaveForm}>Hủy</button><button type="submit" className="price-admin__primary" disabled={loading}>Kiểm tra trước khi lưu</button></>}
+                </div>
             </form>
         </section>
     )

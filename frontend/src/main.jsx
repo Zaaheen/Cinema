@@ -7,6 +7,7 @@ import { neutralTheme } from '@astryxdesign/theme-neutral/built'
 import App from './App.jsx'
 import { AuthProvider } from './auth/AuthProvider'
 import './index.css'
+import './public-stitch.css'
 
 const queryClient = new QueryClient({
   defaultOptions: {

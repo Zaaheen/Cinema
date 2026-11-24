@@ -1,7 +1,7 @@
 import { apiClient } from './client'
 
-export async function fetchMovies(params = {}) {
-  const { data } = await apiClient.get('/movies', { params })
+export async function fetchMovies(params = {}, config = {}) {
+  const { data } = await apiClient.get('/movies', { ...config, params })
   return data.data
 }
 
@@ -10,8 +10,13 @@ export async function fetchMovie(movieId) {
   return data.data
 }
 
-export async function fetchPromotions() {
-  const { data } = await apiClient.get('/promotions')
+export async function fetchPromotions(config = {}) {
+  const { data } = await apiClient.get('/promotions', config)
+  return data.data
+}
+
+export async function fetchPromotion(promotionId) {
+  const { data } = await apiClient.get(`/promotions/${promotionId}`)
   return data.data
 }
 
@@ -21,13 +26,12 @@ export async function fetchTicketPrices() {
 }
 
 export async function fetchShowtimes(movieId, date) {
-  const { data } = await apiClient.get(
-      `/movies/${movieId}/showtimes`,
-      {
-        params: { date },
-      },
-  )
-
+  const { data } = await apiClient.get(`/movies/${movieId}/showtimes`, {
+    params: { date },
+  })
   return data.data
 }
-
+export async function fetchSeatMap(showtimeId, config = {}) {
+  const { data } = await apiClient.get(`/showtimes/${showtimeId}/seat-map`, config)
+  return data.data
+}

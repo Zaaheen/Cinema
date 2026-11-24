@@ -1,81 +1,31 @@
-// Adapted from the Astryx CLI `login-card` template.
-import { FilmIcon } from '@heroicons/react/24/outline'
 import { Link } from 'react-router-dom'
-import { Button } from '@astryxdesign/core/Button'
-import { Card } from '@astryxdesign/core/Card'
-import { Center } from '@astryxdesign/core/Center'
-import { Icon } from '@astryxdesign/core/Icon'
-import { VStack } from '@astryxdesign/core/Layout'
-import { Text, Heading } from '@astryxdesign/core/Text'
-import { TextInput } from '@astryxdesign/core/TextInput'
 
-export function LoginCard({
-  username,
-  password,
-  error,
-  isSubmitting,
-  onUsernameChange,
-  onPasswordChange,
-  onSubmit,
-}) {
+export function LoginCard({ username, password, error, isSubmitting, onUsernameChange, onPasswordChange, onSubmit }) {
   return (
-    <Center axis="both" padding={6} style={{ minHeight: '100%' }}>
-      <VStack gap={4} hAlign="center" style={{ width: '100%', maxWidth: 400 }}>
-        <VStack gap={2} hAlign="center">
-          <Icon icon={FilmIcon} size="lg" />
-          <Text type="body" weight="bold" size="lg">Cinema SE03</Text>
-        </VStack>
-
-        <Card padding={8} width="100%">
-          <form onSubmit={onSubmit}>
-            <VStack gap={4} hAlign="stretch">
-              <VStack gap={1} hAlign="center">
-                <Heading level={2}>Chào mừng trở lại</Heading>
-                <Text type="body" color="secondary" size="sm">
-                  Đăng nhập để tiếp tục đặt vé.
-                </Text>
-              </VStack>
-
-              <VStack gap={2}>
-                <TextInput
-                  label="Tên đăng nhập"
-                  value={username}
-                  onChange={onUsernameChange}
-                  placeholder="Nhập tên đăng nhập"
-                  autoComplete="username"
-                  htmlName="username"
-                  isRequired
-                  size="lg"
-                />
-                <TextInput
-                  label="Mật khẩu"
-                  type="password"
-                  value={password}
-                  onChange={onPasswordChange}
-                  placeholder="Nhập mật khẩu"
-                  autoComplete="current-password"
-                  htmlName="password"
-                  isRequired
-                  size="lg"
-                  status={error ? { type: 'error', message: error } : undefined}
-                />
-              </VStack>
-
-              <Button
-                label="Đăng nhập"
-                type="submit"
-                variant="primary"
-                size="lg"
-                isLoading={isSubmitting}
-              />
-
-              <Text type="supporting" color="secondary" justify="center">
-                Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
-              </Text>
-            </VStack>
-          </form>
-        </Card>
-      </VStack>
-    </Center>
+    <section className="auth-page">
+      <div className="auth-aside" aria-hidden="true">
+        <span className="brand-mark">C</span>
+        <p>ĐÊM NAY XEM GÌ?</p>
+        <h1>Chạm để bước vào thế giới điện ảnh.</h1>
+      </div>
+      <div className="form-card auth-card">
+        <p className="eyebrow">Chào mừng trở lại</p>
+        <h1>Đăng nhập</h1>
+        <p className="muted">Đăng nhập để tiếp tục đặt vé và quản lý tài khoản.</p>
+        <form onSubmit={onSubmit}>
+          <label>
+            Tên đăng nhập
+            <input value={username} onChange={(event) => onUsernameChange(event.target.value)} placeholder="Nhập tên đăng nhập" autoComplete="username" name="username" required />
+          </label>
+          <label>
+            Mật khẩu
+            <input type="password" value={password} onChange={(event) => onPasswordChange(event.target.value)} placeholder="Nhập mật khẩu" autoComplete="current-password" name="password" required />
+          </label>
+          {error ? <p className="form-error" role="alert">{error}</p> : null}
+          <button className="button" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'}</button>
+        </form>
+        <p className="muted">Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link></p>
+      </div>
+    </section>
   )
 }

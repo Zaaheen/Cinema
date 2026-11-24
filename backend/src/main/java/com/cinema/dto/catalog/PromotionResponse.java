@@ -4,10 +4,10 @@ import com.cinema.entity.Promotion;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-public record PromotionResponse(Long id, String title, String description, String discountType,
+public record PromotionResponse(Long id, String title, String description, String imageUrl, String discountType,
         BigDecimal discountValue, Instant startsAt, Instant endsAt) {
     public static PromotionResponse from(Promotion promotion) {
-        return new PromotionResponse(promotion.getId(), promotion.getTitle(), promotion.getDescription(),
+        return new PromotionResponse(promotion.getId(), promotion.getTitle(), promotion.getDescription(), promotion.getImageUrl(),
                 promotion.getDiscountType(), promotion.getDiscountValue(), promotion.getStartsAt(), promotion.getEndsAt());
     }
 }

@@ -48,6 +48,7 @@
 - [x] Test tích hợp auth và catalog. Seed phim demo là tùy chọn; frontend hiển thị trạng thái rỗng khi chưa có dữ liệu.
 
 ### Sprint 2 — Phòng, ghế, suất chiếu (21/11 – 02/12)
+- [x] IMPLEMENTED (code, chưa chạy trên Supabase): migration V9 seed idempotent 5 phòng Cinema `ACTIVE` để chọn lịch chiếu; không tạo ghế hoặc suất chiếu.
 - CRUD phim, phòng chiếu, cấu hình ghế, suất chiếu (Admin).
 - Chống trùng lịch phòng; kiểm tra thời lượng phim và khoảng nghỉ.
 - API lịch chiếu theo phim/ngày, sơ đồ ghế theo suất chiếu.
