@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#181215">
+  <meta name="description" content="Cinema là dự án hệ thống đặt vé xem phim và quản lý rạp, hiện trong giai đoạn phát triển và thử nghiệm.">
+  <title>Cinema — Dự án đặt vé xem phim</title>
+  <style>
+    :root{color-scheme:dark;--bg:#181215;--surface:#241e21;--surface-2:#30262b;--line:#493b42;--text:#f6f0f2;--muted:#cdbbc3;--pink:#f28cb9;--pink-bright:#ffacd0;--ink:#2a1120;font-family:Inter,"Segoe UI",Arial,sans-serif}
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--text);line-height:1.6}
+    a{color:inherit}
+    a:focus-visible{outline:3px solid var(--pink-bright);outline-offset:4px;border-radius:4px}
+    .wrap{width:min(100% - 40px,1180px);margin-inline:auto}
+    .site-header{border-bottom:1px solid var(--line);background:#191719}
+    .header-inner{min-height:80px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+    .brand{font-size:1.35rem;font-weight:800;letter-spacing:-.045em;text-decoration:none;white-space:nowrap}
+    .brand span{color:var(--pink)}
+    .header-link{font-size:.95rem;font-weight:650;text-decoration:none;color:var(--muted);transition:color .2s}
+    .header-link:hover{color:var(--pink-bright)}
+    main{overflow:hidden}
+    .hero{position:relative;padding:clamp(72px,11vw,148px) 0 clamp(64px,9vw,112px);border-bottom:1px solid var(--line)}
+    .hero::before{content:"";position:absolute;inset:0 0 auto auto;width:52%;height:100%;pointer-events:none;background:radial-gradient(ellipse at 72% 45%,rgba(242,140,185,.09),transparent 58%)}
+    .hero-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);align-items:center;gap:clamp(40px,6vw,92px)}
+    .eyebrow{display:inline-flex;align-items:center;gap:10px;margin:0 0 24px;color:var(--pink);font-size:.78rem;font-weight:750;letter-spacing:.13em;text-transform:uppercase}
+    .eyebrow::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--pink);box-shadow:0 0 0 5px rgba(242,140,185,.13)}
+    h1,h2,h3,p{margin-top:0}
+    h1{max-width:750px;margin-bottom:26px;font-size:clamp(3.1rem,6.4vw,6.3rem);font-weight:760;line-height:1.04;letter-spacing:-.072em}
+    h1 em{color:var(--pink);font-style:normal}
+    .lead{max-width:590px;margin-bottom:32px;color:var(--muted);font-size:clamp(1.05rem,1.6vw,1.22rem);line-height:1.75}
+    .actions{display:flex;flex-wrap:wrap;gap:12px}
+    .button{display:inline-flex;min-height:48px;align-items:center;justify-content:center;gap:12px;padding:12px 22px;border:1px solid var(--line);border-radius:10px;text-decoration:none;font-weight:700;transition:background .2s,border-color .2s,color .2s}
+    .button-primary{border-color:var(--pink);background:var(--pink);color:var(--ink)}
+    .button-primary:hover{background:var(--pink-bright);border-color:var(--pink-bright)}
+    .button-secondary:hover{border-color:var(--pink);color:var(--pink-bright)}
+    .arrow{font-size:1.2rem;line-height:1}
+    .visual{position:relative;min-height:500px;display:flex;align-items:center;justify-content:center;isolation:isolate}
+    .visual::before{content:"";position:absolute;width:min(100%,490px);aspect-ratio:1;border:1px solid rgba(242,140,185,.16);border-radius:50%;box-shadow:0 0 0 44px rgba(242,140,185,.025),0 0 0 88px rgba(242,140,185,.018)}
+    .screen{position:relative;width:min(100%,420px);aspect-ratio:4/5;overflow:hidden;border:1px solid #65434f;border-radius:28px;background:linear-gradient(145deg,#3f2533 0%,#231a20 48%,#100d10 100%);box-shadow:0 35px 90px rgba(0,0,0,.45),inset 0 1px rgba(255,255,255,.11);transform:rotate(-4deg)}
+    .screen::before{content:"";position:absolute;inset:-20% -15% 18%;background:radial-gradient(ellipse at 50% 0,rgba(255,173,208,.38),rgba(201,76,129,.08) 43%,transparent 70%);filter:blur(4px)}
+    .screen::after{content:"";position:absolute;left:-8%;right:-8%;bottom:17%;height:1px;background:linear-gradient(90deg,transparent,var(--pink),transparent);box-shadow:0 0 28px 8px rgba(242,140,185,.15)}
+    .screen-top{position:absolute;z-index:1;top:32px;left:32px;right:32px;display:flex;justify-content:space-between;align-items:center;color:#eccbd9;font-size:.7rem;letter-spacing:.17em;text-transform:uppercase}
+    .screen-mark{position:absolute;z-index:1;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(3rem,5vw,5rem);font-weight:800;letter-spacing:-.07em;text-shadow:0 10px 38px rgba(0,0,0,.5)}
+    .screen-bottom{position:absolute;z-index:1;bottom:30px;left:32px;right:32px;display:flex;justify-content:space-between;gap:14px;color:#d7b9c6;font-size:.74rem;letter-spacing:.13em;text-transform:uppercase}
+    .section{padding:clamp(72px,9vw,112px) 0}
+    .section-head{display:flex;align-items:end;justify-content:space-between;gap:30px;margin-bottom:36px}
+    .section-kicker{margin-bottom:11px;color:var(--pink);font-size:.78rem;font-weight:750;letter-spacing:.14em;text-transform:uppercase}
+    h2{max-width:700px;margin-bottom:0;font-size:clamp(2rem,3.8vw,3.55rem);font-weight:720;line-height:1.13;letter-spacing:-.055em}
+    .section-intro{max-width:345px;margin-bottom:3px;color:var(--muted)}
+    .features{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+    .feature{min-height:270px;padding:28px;border:1px solid var(--line);border-radius:18px;background:var(--surface)}
+    .number{display:block;margin-bottom:54px;color:var(--pink);font-size:.8rem;font-weight:760;letter-spacing:.1em}
+    .feature h3{margin-bottom:12px;font-size:1.28rem;line-height:1.3;letter-spacing:-.025em}
+    .feature p{margin-bottom:0;color:var(--muted);font-size:.94rem}
+    .note{display:flex;align-items:center;justify-content:space-between;gap:40px;margin-top:22px;padding:28px 32px;border:1px solid #65434f;border-radius:18px;background:linear-gradient(105deg,#30202a,var(--surface))}
+    .note strong{display:block;margin-bottom:6px;font-size:1.05rem}
+    .note p{max-width:720px;margin:0;color:var(--muted);font-size:.94rem}
+    .note-tag{flex:none;color:var(--pink);font-size:.76rem;font-weight:760;letter-spacing:.12em;text-transform:uppercase}
+    footer{border-top:1px solid var(--line);padding:30px 0 42px;color:var(--muted);font-size:.88rem}
+    .footer-inner{display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .footer-inner a{text-decoration:none;color:var(--pink-bright)}
+    .footer-inner a:hover{text-decoration:underline}
+    @media(max-width:850px){.hero-grid{grid-template-columns:1fr}.hero{padding-top:72px}.visual{min-height:420px}.screen{width:min(75%,360px)}.section-head{align-items:start;flex-direction:column}.features{grid-template-columns:1fr 1fr}.feature:last-child{grid-column:1/-1;min-height:0}.number{margin-bottom:35px}}
+    @media(max-width:560px){.wrap{width:min(100% - 32px,1180px)}.header-inner{min-height:68px}.brand{font-size:1.17rem}.header-link{font-size:.84rem}h1{font-size:clamp(2.75rem,13vw,4.1rem)}.lead{font-size:1rem}.actions{display:grid}.button{width:100%}.visual{min-height:340px}.screen{width:min(76%,280px);border-radius:20px}.screen-top{top:21px;left:21px;right:21px;font-size:.57rem}.screen-mark{font-size:3.1rem}.screen-bottom{left:21px;right:21px;bottom:21px;font-size:.56rem}.features{grid-template-columns:1fr}.feature,.feature:last-child{grid-column:auto;min-height:0}.number{margin-bottom:32px}.note{align-items:start;flex-direction:column;padding:24px;gap:16px}.footer-inner{align-items:start;flex-direction:column}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important}}
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="#top" aria-label="Cinema, về đầu trang">CINEMA<span>.VN</span></a>
+      <a class="header-link" href="https://github.com/Zaaheen/Cinema">GitHub repository <span aria-hidden="true">↗</span></a>
+    </div>
+  </header>
+  <main id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap hero-grid">
+        <div>
+          <p class="eyebrow">Dự án đang phát triển &amp; thử nghiệm</p>
+          <h1 id="hero-title">Một chỗ ngồi cho <em>mọi câu chuyện.</em></h1>
+          <p class="lead">Cinema là dự án xây dựng hệ thống đặt vé xem phim và quản lý rạp. Chúng tôi đang phát triển trải nghiệm từ khám phá lịch chiếu, chọn ghế đến quản lý đơn đặt vé.</p>
+          <div class="actions">
+            <a class="button button-primary" href="https://github.com/Zaaheen/Cinema">Xem mã nguồn <span class="arrow" aria-hidden="true">↗</span></a>
+            <a class="button button-secondary" href="#about">Tìm hiểu dự án <span class="arrow" aria-hidden="true">↓</span></a>
+          </div>
+        </div>
+        <div class="visual" aria-hidden="true">
+          <div class="screen">
+            <div class="screen-top"><span>Cinema project</span><span>Est. 2026</span></div>
+            <div class="screen-mark">CINEMA<span style="color:var(--pink)">.</span></div>
+            <div class="screen-bottom"><span>Discover</span><span>Choose</span><span>Enjoy</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="section" id="about" aria-labelledby="about-title">
+      <div class="wrap">
+        <div class="section-head">
+          <div><p class="section-kicker">Về dự án</p><h2 id="about-title">Trải nghiệm điện ảnh, từ màn hình đến rạp.</h2></div>
+          <p class="section-intro">Một nền tảng đang được xây dựng để kết nối khán giả với suất chiếu và hỗ trợ vận hành rạp.</p>
+        </div>
+        <div class="features">
+          <article class="feature"><span class="number">01 / KHÁM PHÁ</span><h3>Phim &amp; lịch chiếu</h3><p>Xem thông tin phim, tìm suất chiếu theo ngày và chọn thời gian phù hợp.</p></article>
+          <article class="feature"><span class="number">02 / ĐẶT VÉ</span><h3>Chọn ghế &amp; đặt vé</h3><p>Chọn ghế theo sơ đồ phòng chiếu, theo dõi đơn và nhận vé khi thanh toán được xác nhận.</p></article>
+          <article class="feature"><span class="number">03 / VẬN HÀNH</span><h3>Quản lý rạp</h3><p>Hỗ trợ quản lý phim, suất chiếu, giá vé và các nghiệp vụ nội bộ theo từng quyền truy cập.</p></article>
+        </div>
+        <div class="note"><div><strong>Hiện trong giai đoạn development &amp; testing</strong><p>Trang này chỉ giới thiệu dự án. Landing page không đăng nhập, không kết nối backend hoặc database và không xử lý giao dịch. Tích hợp VNPAY Sandbox của ứng dụng đang được kiểm thử riêng.</p></div><span class="note-tag">Project preview</span></div>
+      </div>
+    </section>
+  </main>
+  <footer><div class="wrap footer-inner"><span>© 2026 Cinema Project · Trang giới thiệu dự án</span><a href="https://github.com/Zaaheen/Cinema">Xem repository trên GitHub ↗</a></div></footer>
+</body>
+</html>
+
