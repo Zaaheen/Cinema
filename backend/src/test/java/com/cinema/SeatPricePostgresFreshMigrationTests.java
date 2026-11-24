@@ -23,19 +23,19 @@ class SeatPricePostgresFreshMigrationTests {
             .withPassword("cinema");
 
     @Test
-    void migratesFreshPostgresThroughV8ThenValidatesAndIsIdempotent() throws Exception {
+    void migratesFreshPostgresThroughV9ThenValidatesAndIsIdempotent() throws Exception {
         Flyway flyway = Flyway.configure()
                 .dataSource(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword())
                 .locations("classpath:db/migration")
                 .load();
 
-        assertEquals(8, flyway.migrate().migrationsExecuted);
+        assertEquals(9, flyway.migrate().migrationsExecuted);
         flyway.validate();
         assertEquals(0, flyway.migrate().migrationsExecuted);
 
         try (Connection connection = DriverManager.getConnection(
                 POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword())) {
-            assertEquals(Set.of("1", "2", "3", "4", "5", "6", "7", "8"), successfulVersions(connection));
+            assertEquals(Set.of("1", "2", "3", "4", "5", "6", "7", "8", "9"), successfulVersions(connection));
             assertTrue(relationExists(connection, "seat_price_audit_logs"));
             assertTrue(constraintExists(connection, "ex_seat_prices_active_generic_overlap"));
             assertTrue(constraintExists(connection, "ex_seat_prices_active_exact_overlap"));

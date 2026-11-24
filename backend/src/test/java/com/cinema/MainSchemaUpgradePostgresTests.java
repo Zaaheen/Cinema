@@ -13,7 +13,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 class MainSchemaUpgradePostgresTests {
     @Test
-    void upgradesMainV1ThroughV3WithExistingDataToV8() throws Exception {
+    void upgradesMainV1ThroughV3WithExistingDataToV9() throws Exception {
         try (PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
                 .withDatabaseName("cinema_main_upgrade_test")) {
             postgres.start();
@@ -40,14 +40,16 @@ class MainSchemaUpgradePostgresTests {
             Flyway latest = Flyway.configure()
                     .dataSource(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword())
                     .locations("classpath:db/migration").load();
-            assertEquals(5, latest.migrate().migrationsExecuted);
+            assertEquals(6, latest.migrate().migrationsExecuted);
             latest.validate();
             assertEquals(0, latest.migrate().migrationsExecuted);
 
             try (Connection connection = DriverManager.getConnection(
                     postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
                  Statement sql = connection.createStatement()) {
-                assertEquals(8, count(sql, "select count(*) from flyway_schema_history where success and version is not null"));
+                assertEquals(9, count(sql, "select count(*) from flyway_schema_history where success and version is not null"));
+                assertEquals(5, count(sql, "select count(*) from rooms where name like 'Phòng 0%' and status = 'ACTIVE'"));
+                assertEquals(1, count(sql, "select count(*) from rooms where name = 'Main upgrade room'"));
                 assertEquals(1, count(sql, "select count(*) from movies where title = 'Main upgrade movie' and genre = 'Hành động'"));
                 assertEquals(1, count(sql, "select count(*) from movie_genres mg join movies m on m.id = mg.movie_id "
                         + "join genres g on g.id = mg.genre_id where m.title = 'Main upgrade movie' and g.name = 'Hành động'"));

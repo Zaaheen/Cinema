@@ -39,10 +39,10 @@ class ShowtimeOverlapPostgresMigrationTests {
             .withPassword("cinema");
 
     @Test
-    void freshDatabaseMigratesThroughV8ValidatesAndIsIdempotent() throws Exception {
+    void freshDatabaseMigratesThroughV9ValidatesAndIsIdempotent() throws Exception {
         clean();
         Flyway flyway = flyway();
-        assertEquals(8, flyway.migrate().migrationsExecuted);
+        assertEquals(9, flyway.migrate().migrationsExecuted);
         flyway.validate();
         assertEquals(0, flyway.migrate().migrationsExecuted);
 
@@ -53,7 +53,7 @@ class ShowtimeOverlapPostgresMigrationTests {
             assertTrue(constraintExists(connection, "ex_seat_prices_active_generic_overlap"));
             assertTrue(constraintExists(connection, "ex_seat_prices_active_exact_overlap"));
             assertEquals(6, count(connection, "select count(*) from genres"));
-            assertEquals(8, successfulMigrationCount(connection));
+            assertEquals(9, successfulMigrationCount(connection));
         }
     }
 

@@ -27,15 +27,15 @@ class MovieGenrePostgresMigrationTests {
             .withPassword("cinema");
 
     @Test
-    void migratesFreshPostgresThroughV8AndRemainsIdempotent() throws Exception {
+    void migratesFreshPostgresThroughV9AndRemainsIdempotent() throws Exception {
         Flyway flyway = flyway();
 
-        assertEquals(8, flyway.migrate().migrationsExecuted);
+        assertEquals(9, flyway.migrate().migrationsExecuted);
         flyway.validate();
         assertEquals(0, flyway.migrate().migrationsExecuted);
 
         try (Connection connection = connect()) {
-            assertEquals(Set.of("1", "2", "3", "4", "5", "6", "7", "8"), successfulVersions(connection));
+            assertEquals(Set.of("1", "2", "3", "4", "5", "6", "7", "8", "9"), successfulVersions(connection));
             assertEquals(6, count(connection, "select count(*) from genres where is_selectable"));
             assertEquals(6, count(connection, "select count(*) from genres"));
             assertTrue(constraintExists(connection, "ux_genres_name"));
