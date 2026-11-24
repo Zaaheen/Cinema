@@ -1,9 +1,73 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../auth/useAuth'
+import { roleHome, roleLabel } from '../lib/roles'
+
+const navLinkClass = 'rounded-md px-3 py-2 text-sm text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface'
 
 export function CinemaHeader() {
-  return <header className="fixed top-0 z-50 w-full bg-surface/85 shadow-[0_10px_30px_-10px_rgba(0,0,0,.6)] backdrop-blur-xl"><div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-space-md px-margin-mobile lg:px-margin"><div className="flex flex-shrink-0 items-center gap-space-lg"><Link to="/" className="font-headline-lg text-headline-lg font-extrabold tracking-tight text-on-surface">CINEMA<span className="text-primary-container drop-shadow-[0_0_12px_rgba(255,69,162,.8)]">.VN</span></Link><div className="hidden cursor-pointer items-center gap-1.5 rounded-full bg-surface-container px-3 py-1.5 transition-colors hover:bg-surface-container-high sm:flex"><span className="material-symbols-outlined text-[18px] text-primary">location_on</span><span className="font-label-md text-label-md font-semibold text-on-surface">TP. Hồ Chí Minh</span><span className="material-symbols-outlined text-[16px] text-outline">expand_more</span></div></div><div className="mx-space-sm hidden max-w-xs flex-1 items-center xl:flex"><div className="relative flex w-full items-center"><span className="material-symbols-outlined absolute left-3 text-[18px] text-outline">search</span><input aria-label="Tìm kiếm" className="w-full rounded-lg bg-surface-container-lowest py-2 pl-9 pr-3 font-body-sm text-body-sm text-on-surface placeholder:text-outline transition-all focus:bg-surface-container focus:outline-none" placeholder="Tìm phim, rạp CGV, Lotte..." /></div></div><nav className="hidden items-center gap-1 lg:flex"><Link className="rounded-lg px-3 py-2 font-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface" to="/movies">Phim chiếu</Link><Link className="rounded-lg px-3 py-2 font-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface" to="/movies#showtimes">Lịch chiếu</Link><Link className="rounded-lg px-3 py-2 font-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface" to="/promotions">Ưu đãi</Link><span className="hidden rounded-lg px-3 py-2 font-label-lg text-on-surface-variant xl:inline">Tin tức</span></nav><div className="flex flex-shrink-0 items-center gap-space-sm"><span className="material-symbols-outlined hidden text-on-surface-variant sm:inline">notifications</span><Link to="/account/profile" aria-label="Tài khoản" className="grid h-8 w-8 place-items-center rounded-full bg-primary text-on-primary"><span className="material-symbols-outlined text-[18px]">person</span></Link></div></div></header>;
+  const { user, isAuthenticated, logout } = useAuth()
+  const navigate = useNavigate()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const member = user?.role === 'MEMBER'
+  const handleLogout = async () => { setMenuOpen(false); await logout(); navigate('/') }
+
+  return <header className="cinema-header fixed top-0 z-50 w-full">
+    <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-margin-mobile lg:px-margin">
+      <div className="flex flex-shrink-0 items-center gap-5">
+        <Link to="/" className="cinema-header__brand font-headline-lg text-headline-lg text-on-surface">CINEMA<span>.VN</span></Link>
+        <span className="hidden items-center gap-1.5 text-xs text-on-surface-variant sm:inline-flex"><span className="material-symbols-outlined text-[17px]">location_on</span>TP. Hồ Chí Minh</span>
+      </div>
+      <nav className="hidden items-center gap-1 lg:flex" aria-label="Điều hướng chính">
+        <Link className={navLinkClass} to="/movies">Phim chiếu</Link>
+        <Link className={navLinkClass} to="/movies#showtimes">Lịch chiếu</Link>
+        <Link className={navLinkClass} to="/promotions">Ưu đãi</Link>
+      </nav>
+      <div className="relative flex flex-shrink-0 items-center gap-2">
+        {!isAuthenticated ? <>
+          <Link to="/login" className="hidden rounded-md px-3 py-2 text-sm text-on-surface-variant transition-colors hover:text-on-surface sm:inline-flex">Đăng nhập</Link>
+          <Link to="/register" className="cinema-header__register rounded-md px-3 py-2 text-sm">Đăng ký</Link>
+        </> : <>
+          <button type="button" className="flex items-center gap-2 rounded-md p-1 text-left transition-colors hover:bg-surface-container" aria-expanded={menuOpen} aria-haspopup="menu" aria-label="Mở menu tài khoản" onClick={() => setMenuOpen((open) => !open)}>
+            <span className="hidden max-w-32 truncate text-sm text-on-surface sm:block">{user?.fullName || user?.username || roleLabel(user?.role)}</span>
+            <span className="grid h-9 w-9 place-items-center rounded-full border border-surface-container-highest bg-surface-container text-on-surface"><span className="material-symbols-outlined text-[20px]">person</span></span>
+          </button>
+          {menuOpen ? <div className="absolute right-0 top-12 z-50 w-60 overflow-hidden rounded-lg border border-surface-container-highest bg-surface-container-low p-1" role="menu">
+            <p className="px-3 py-2 text-xs text-outline">{roleLabel(user?.role)}</p>
+            {member ? <>
+              <Link className="menu-item" role="menuitem" to="/member" onClick={() => setMenuOpen(false)}>Không gian thành viên</Link>
+              <Link className="menu-item" role="menuitem" to="/account" onClick={() => setMenuOpen(false)}>Hồ sơ của tôi</Link>
+            </> : <Link className="menu-item" role="menuitem" to={roleHome(user?.role)} onClick={() => setMenuOpen(false)}>Khu vực {roleLabel(user?.role).toLowerCase()}</Link>}
+            <button type="button" className="menu-item w-full text-left text-error" role="menuitem" onClick={handleLogout}>Đăng xuất</button>
+          </div> : null}
+        </>}
+      </div>
+    </div>
+  </header>
 }
 
 export function CinemaFooter() {
-  return <><footer className="w-full bg-surface-container-low font-body-sm text-body-sm text-on-surface-variant shadow-[0_-10px_30px_-10px_rgba(0,0,0,.5)]"><div className="mx-auto max-w-7xl px-margin-mobile py-margin lg:px-margin"><div className="mb-space-xl grid grid-cols-1 gap-space-lg md:grid-cols-2 lg:grid-cols-5"><div className="space-y-space-sm lg:col-span-2"><div className="font-headline-md text-headline-md font-extrabold tracking-tight text-on-surface">CINEMA<span className="text-primary-container drop-shadow-[0_0_10px_rgba(255,69,162,.6)]">.VN</span></div><p className="max-w-md font-body-md leading-relaxed text-on-surface-variant">Tổ hợp rạp chiếu phim chuẩn quốc tế với 5 phòng chiếu công nghệ cao tại 120 Hai Bà Trưng, Quận 1, TP. Hồ Chí Minh.</p></div><div><h2 className="mb-space-sm font-headline-sm text-headline-sm font-bold text-on-surface">Phòng chiếu Cinema</h2><ul className="space-y-2"><li>• Phòng 01 - IMAX Laser 3D</li><li>• Phòng 02 - Dolby Atmos</li><li>• Phòng 03 - CineLounge VIP</li><li>• Phòng 04 - Standard 2D</li><li>• Phòng 05 - Standard 2D</li></ul></div><div><h2 className="mb-space-sm font-headline-sm text-headline-sm font-bold text-on-surface">Hỗ trợ &amp; Điều khoản</h2><ul className="space-y-2"><li><span className="hover:text-primary">Quy chế hoạt động</span></li><li><span className="hover:text-primary">Chính sách bảo mật</span></li><li><span className="hover:text-primary">Điều kiện hoàn vé</span></li><li><span className="hover:text-primary">Câu hỏi thường gặp</span></li><li><span className="hover:text-primary">Chăm sóc khách hàng</span></li></ul></div><div className="space-y-space-sm"><h2 className="font-headline-sm text-headline-sm font-bold text-on-surface">Tải ứng dụng Cinema</h2><p>Đặt vé thần tốc, nhận vé điện tử QR không cần xếp hàng.</p><div className="flex flex-col gap-2"><div className="flex items-center gap-3 rounded-lg bg-surface-container px-4 py-2.5"><span className="material-symbols-outlined text-[24px] text-on-surface">phone_iphone</span><div><p className="font-label-sm text-outline">Tải trên</p><p className="font-label-lg font-bold text-on-surface">App Store</p></div></div><div className="flex items-center gap-3 rounded-lg bg-surface-container px-4 py-2.5"><span className="material-symbols-outlined text-[24px] text-on-surface">play_arrow</span><div><p className="font-label-sm text-outline">Tải trên</p><p className="font-label-lg font-bold text-on-surface">Google Play</p></div></div></div></div></div><div className="flex flex-col items-center justify-between gap-space-md border-t border-surface-container-high pt-space-md md:flex-row"><p className="text-center font-body-sm text-outline md:text-left">© 2025 Cinema.vn Vietnam Aggregate Co., Ltd. Tất cả quyền được bảo lưu.</p><div className="flex items-center gap-3"><span className="rounded bg-surface-container-high px-2 py-0.5 font-label-sm font-extrabold tracking-widest text-on-surface">IMAX</span><span className="rounded bg-surface-container-high px-2 py-0.5 font-label-sm font-extrabold tracking-widest text-on-surface">DOLBY ATMOS</span><span className="rounded bg-surface-container-high px-2 py-0.5 font-label-sm font-extrabold tracking-widest text-on-surface">4DX</span><span className="rounded bg-surface-container-high px-2 py-0.5 font-label-sm font-extrabold tracking-widest text-secondary">GOLD CLASS</span></div></div></div></footer><nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around bg-surface-container-low/95 px-4 shadow-[0_-4px_20px_rgba(0,0,0,.7)] backdrop-blur-xl md:hidden"><Link className="flex flex-col items-center gap-1 text-on-surface-variant" to="/movies"><span className="material-symbols-outlined text-[22px]">movie</span><span className="font-label-sm">Phim</span></Link><Link className="flex flex-col items-center gap-1 text-on-surface-variant" to="/movies#showtimes"><span className="material-symbols-outlined text-[22px]">calendar_today</span><span className="font-label-sm">Lịch chiếu</span></Link><Link className="flex flex-col items-center gap-1 text-on-surface-variant" to="/promotions"><span className="material-symbols-outlined text-[22px]">local_offer</span><span className="font-label-sm">Ưu đãi</span></Link><Link className="flex flex-col items-center gap-1 text-on-surface-variant" to="/account/profile"><span className="material-symbols-outlined text-[22px]">account_circle</span><span className="font-label-sm">Tôi</span></Link></nav></>;
+  const { isAuthenticated, user } = useAuth()
+  const mobileAccountLink = isAuthenticated ? (user?.role === 'MEMBER' ? '/account' : roleHome(user?.role)) : '/login'
+
+  return <>
+    <footer className="cinema-footer w-full bg-surface-container-low text-sm text-on-surface-variant">
+      <div className="mx-auto max-w-7xl px-margin-mobile py-10 lg:px-margin">
+        <div className="mb-10 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5">
+          <div className="space-y-2 lg:col-span-2"><div className="cinema-header__brand font-headline-lg text-2xl text-on-surface">CINEMA<span className="text-primary">.VN</span></div><p className="max-w-md leading-relaxed">Rạp chiếu phim tại TP. Hồ Chí Minh.</p></div>
+          <div><h2 className="mb-3 text-base font-medium text-on-surface">Phòng chiếu Cinema</h2><ul className="space-y-2"><li>• IMAX Laser 3D</li><li>• Dolby Atmos</li><li>• CineLounge VIP</li></ul></div>
+          <div><h2 className="mb-3 text-base font-medium text-on-surface">Hỗ trợ</h2><ul className="space-y-2"><li>Chính sách bảo mật</li><li>Điều kiện hoàn vé</li><li>Chăm sóc khách hàng</li></ul></div>
+        </div>
+        <div className="border-t border-surface-container-high pt-5 text-outline">© 2025 Cinema.vn Vietnam Aggregate Co., Ltd.</div>
+      </div>
+    </footer>
+    <nav className="cinema-mobile-nav fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around bg-surface-container-low px-4 md:hidden" aria-label="Điều hướng di động">
+      <MobileLink to="/movies" icon="movie" label="Phim" />
+      <MobileLink to="/movies#showtimes" icon="calendar_today" label="Lịch chiếu" />
+      <MobileLink to="/promotions" icon="local_offer" label="Ưu đãi" />
+      <MobileLink to={mobileAccountLink} icon="account_circle" label={isAuthenticated ? 'Tôi' : 'Đăng nhập'} />
+    </nav>
+  </>
 }
+
+function MobileLink({ to, icon, label }) { return <Link className="flex flex-col items-center gap-1 text-on-surface-variant" to={to}><span className="material-symbols-outlined text-[22px]">{icon}</span><span className="text-xs">{label}</span></Link> }

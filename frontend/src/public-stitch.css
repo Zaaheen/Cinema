@@ -30,3 +30,546 @@ progress.promotion-list__spinner:indeterminate { width: 2.5rem; height: 2.5rem; 
 progress.promotion-list__spinner:indeterminate::-webkit-progress-bar, progress.promotion-list__spinner:indeterminate::-webkit-progress-value, progress.promotion-list__spinner:indeterminate::-moz-progress-bar { display: none; background: none; }
 @keyframes promotion-list-spin { to { transform: rotate(1turn); } }
 @media (prefers-reduced-motion: reduce) { progress.promotion-list__spinner:indeterminate { animation-duration: 6s; } }
+
+.promotion-detail { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); overflow: hidden; border: 1px solid #4c3941; border-radius: 1.25rem; background: #241e21; box-shadow: 0 1.5rem 3rem rgba(0,0,0,.22); }
+.promotion-detail__visual { min-height: 34rem; background: #3a2633; }
+.promotion-detail__visual img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.promotion-detail__visual-fallback { display: flex; height: 100%; min-height: 34rem; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; background: radial-gradient(circle at 50% 30%, #763352, #2f2029 55%, #181215); color: #ffb0cd; font-family: 'Be Vietnam Pro', sans-serif; font-size: 1.5rem; font-weight: 800; letter-spacing: .08em; }
+.promotion-detail__visual-fallback .material-symbols-outlined { font-size: 5rem; }
+.promotion-detail__content { min-width: 0; padding: clamp(1.5rem, 4vw, 3.5rem); }
+.promotion-detail__eyebrow { margin: 0; color: #ffb0cd; font-size: .75rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.promotion-detail h1 { margin: .75rem 0 1.5rem; color: #f4e8ed; font-family: 'Be Vietnam Pro', sans-serif; font-size: clamp(1.75rem, 3vw, 2.75rem); font-weight: 800; line-height: 1.2; }
+.promotion-detail__discount { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem 1rem; border: 1px solid #80405f; border-radius: .9rem; background: #482337; padding: 1rem 1.25rem; }
+.promotion-detail__discount span { width: 100%; color: #e2bdc8; font-size: .8rem; font-weight: 700; }
+.promotion-detail__discount strong { color: #ffb0cd; font-size: clamp(2rem, 3vw, 2.75rem); line-height: 1.1; }
+.promotion-detail__discount small { color: #f4d5e0; }
+.promotion-detail__section { margin-top: 1.75rem; }
+.promotion-detail__section h2 { margin: 0 0 .6rem; color: #f4e8ed; font-size: 1.1rem; font-weight: 700; }
+.promotion-detail__section p { margin: 0; color: #e2bdc8; line-height: 1.7; white-space: pre-line; }
+.promotion-detail__dates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin: 0; }
+.promotion-detail__dates > div { min-width: 0; border-radius: .7rem; background: #181215; padding: .9rem; }
+.promotion-detail__dates dt { color: #a98893; font-size: .75rem; font-weight: 700; }
+.promotion-detail__dates dd { margin: .35rem 0 0; color: #f4e8ed; font-weight: 600; }
+.promotion-detail__note { margin: 1.5rem 0 0; color: #a98893; font-size: .8rem; }
+.promotion-detail__actions, .promotion-detail__state-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.75rem; }
+.promotion-detail__actions a, .promotion-detail__state-actions a, .promotion-detail__state-actions button { display: inline-flex; min-height: 2.75rem; align-items: center; justify-content: center; gap: .6rem; border: 1px solid #6d565f; border-radius: .7rem; padding: .65rem 1rem; color: #f4e8ed; font-weight: 700; text-decoration: none; }
+.promotion-detail__actions a:hover, .promotion-detail__state-actions a:hover, .promotion-detail__state-actions button:hover { border-color: #ffb0cd; }
+.promotion-detail__actions .promotion-detail__primary { border-color: #ff45a2; background: #ff45a2; color: #580031; }
+.promotion-detail__state { min-height: 18rem; border: 1px solid #4c3941; border-radius: 1rem; background: #241e21; padding: 2rem; color: #e2bdc8; }
+.promotion-detail__state h1 { margin: 0 0 .75rem; color: #f4e8ed; font-size: 1.5rem; }
+.promotion-detail__state-actions button { background: #33272d; cursor: pointer; }
+@media (max-width: 48rem) { .promotion-detail { grid-template-columns: 1fr; }.promotion-detail__visual, .promotion-detail__visual-fallback { min-height: 15rem; max-height: 22rem; }.promotion-detail__dates { grid-template-columns: 1fr; } }
+
+.promotion-list__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
+.promotion-list__card { display: flex; min-width: 0; flex-direction: column; overflow: hidden; border: 1px solid #4c3941; border-radius: 1rem; background: #241e21; box-shadow: 0 1rem 2rem rgba(0,0,0,.16); }
+.promotion-list__visual { min-height: 12rem; aspect-ratio: 16 / 9; overflow: hidden; background: #3a2633; }
+.promotion-list__visual img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.promotion-list__visual-fallback { display: flex; height: 100%; min-height: 12rem; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; background: radial-gradient(circle at 50% 30%, #763352, #2f2029 55%, #181215); color: #ffb0cd; font-size: 1rem; font-weight: 800; letter-spacing: .08em; }
+.promotion-list__visual-fallback .material-symbols-outlined { font-size: 3rem; }
+.promotion-list__content { display: flex; min-width: 0; flex: 1; flex-direction: column; padding: 1.5rem; }
+.promotion-list__discount { margin: 0; color: #ffb0cd; font-size: .85rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.promotion-list__content h2 { margin: .65rem 0 0; color: #f4e8ed; font-size: clamp(1.25rem, 2vw, 1.6rem); line-height: 1.3; overflow-wrap: anywhere; }
+.promotion-list__description { margin: .8rem 0 0; color: #e2bdc8; line-height: 1.6; }
+.promotion-list__expiry { margin: auto 0 0; padding-top: 1.5rem; color: #c7aeb8; font-size: .85rem; }
+.promotion-list__content a { display: inline-flex; min-height: 2.75rem; align-items: center; justify-content: center; gap: .5rem; margin-top: 1rem; border-radius: .7rem; background: #ff45a2; color: #250714; font-weight: 800; text-decoration: none; }
+.promotion-list__content a:hover { background: #ff74b8; }
+.promotion-list__content a:focus-visible { outline: 3px solid #ffc640; outline-offset: 3px; }
+.promotion-list__grid--single { grid-template-columns: 1fr; }
+.promotion-list__grid--single .promotion-list__card { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); }
+.promotion-list__grid--single .promotion-list__visual { aspect-ratio: auto; min-height: 20rem; }
+.promotion-list__grid--single .promotion-list__visual-fallback { min-height: 20rem; }
+.promotion-list__grid--single .promotion-list__content { justify-content: center; padding: clamp(1.5rem, 4vw, 3rem); }
+.promotion-list__grid--single .promotion-list__content a { align-self: flex-start; padding: .65rem 1.5rem; }
+.promotion-list__grid--single .promotion-list__expiry { margin-top: 0; }
+@media (max-width: 64rem) { .promotion-list__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .promotion-list__grid--single { grid-template-columns: 1fr; } }
+@media (max-width: 48rem) { .promotion-list__grid, .promotion-list__grid--single { grid-template-columns: 1fr; } .promotion-list__grid--single .promotion-list__card { display: flex; } .promotion-list__grid--single .promotion-list__visual, .promotion-list__grid--single .promotion-list__visual-fallback { min-height: 12rem; max-height: 17rem; } .promotion-list__grid--single .promotion-list__content a { align-self: stretch; } }
+
+/* Cinema public screens: content carries the accent; navigation stays quiet. */
+.cinema-public { font-family: Inter, system-ui, sans-serif; }
+.cinema-header { border-bottom: 1px solid #342f31; background: #191719; box-shadow: none; }
+.cinema-header .cinema-header__brand { font-weight: 600; letter-spacing: -.045em; }
+.cinema-header .cinema-header__brand span { color: #f28cb9; text-shadow: none; }
+.cinema-header .cinema-header__register { border: 1px solid #5a4550; background: transparent; color: #f4e8ed; box-shadow: none; }
+.cinema-header__register { display: inline-flex; min-height: 2.75rem; align-items: center; }
+.cinema-header .cinema-header__register:hover { background: #2a2428; }
+.cinema-footer { border-top: 1px solid #342f31; box-shadow: none; }
+.cinema-mobile-nav { height: calc(4rem + env(safe-area-inset-bottom)); border-top: 1px solid #463b40; padding-bottom: env(safe-area-inset-bottom); box-shadow: none; backdrop-filter: none; }
+.cinema-mobile-nav a { min-width: 3.5rem; min-height: 3rem; justify-content: center; }
+.cinema-kicker { margin: 0; color: #f28cb9; font-size: .875rem; font-weight: 500; line-height: 1.4; }
+.cinema-button { display: inline-flex; min-height: 2.75rem; align-items: center; justify-content: center; gap: .6rem; border: 1px solid #63535b; border-radius: .6rem; padding: .65rem 1.2rem; color: #f4e8ed; font: inherit; font-weight: 500; text-decoration: none; cursor: pointer; transition: background-color .18s ease, border-color .18s ease; }
+.cinema-button:hover { background: #2c2729; }
+.cinema-button--primary { border-color: #f28cb9; background: #f28cb9; color: #2a1120; }
+.cinema-button--primary:hover { border-color: #ffacd0; background: #ffacd0; }
+.cinema-text-link { display: inline-flex; min-height: 2.75rem; align-items: center; gap: .45rem; color: #f4e8ed; font-size: .9rem; font-weight: 500; text-decoration: none; }
+.cinema-text-link:hover { color: #f28cb9; }
+.cinema-hero { border-bottom: 1px solid #342f31; background: #1d1a1c; }
+.cinema-hero__inner { display: grid; width: min(100% - 2rem, 80rem); min-height: 19rem; align-items: center; gap: 3rem; margin: auto; padding: 3.5rem 0; }
+.cinema-hero--with-visual .cinema-hero__inner { grid-template-columns: minmax(0, 1fr) minmax(20rem, .86fr); min-height: 25rem; padding: 2rem 0; }
+.cinema-hero__copy { max-width: 38rem; }
+.cinema-hero h1 { margin: 1rem 0 0; color: #f6f0f2; font-family: 'Be Vietnam Pro', Inter, sans-serif; font-size: clamp(2.1rem, 4.5vw, 3.6rem); font-weight: 500; line-height: 1.14; letter-spacing: -.035em; }
+.cinema-hero__description { max-width: 34rem; margin: 1rem 0 0; color: #c9bfc3; font-size: 1rem; line-height: 1.65; }
+.cinema-hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1.5rem; margin-top: 1.75rem; }
+.cinema-hero__visual { position: relative; height: 23rem; overflow: hidden; border: 1px solid #42383d; border-radius: .75rem; background: #242023; }
+.cinema-hero__visual img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
+.cinema-hero__visual span { position: absolute; right: 1rem; bottom: 1rem; left: 1rem; width: fit-content; max-width: calc(100% - 2rem); border-radius: .35rem; background: #191719e8; padding: .35rem .65rem; color: #f6f0f2; font-size: .8rem; }
+.cinema-hero__showtime { position: relative; display: grid; min-height: 18rem; align-content: center; gap: .65rem; overflow: hidden; border: 1px solid #66545c; border-radius: .75rem; background: #2b2428; padding: 2rem; color: #e7dce0; text-decoration: none; }
+.cinema-hero__showtime::after { position: absolute; right: 0; bottom: 3.5rem; left: 0; border-top: 1px dashed #806471; content: ''; }
+.cinema-hero__showtime > span:first-child { color: #d9bdc8; font-size: .85rem; }
+.cinema-hero__showtime strong { color: #f28cb9; font-family: 'Be Vietnam Pro', Inter, sans-serif; font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1; }
+.cinema-hero__showtime small { color: #bfb4b9; font-size: .8rem; }
+.cinema-hero__showtime-action { align-self: end; padding-top: 1.25rem; color: #f6f0f2; font-size: .85rem; }
+.cinema-section { padding: 3.5rem max(1rem, calc((100vw - 80rem) / 2)); }
+.cinema-section--raised { border-block: 1px solid #302b2e; background: #201d1f; }
+.cinema-section__heading { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+.cinema-section__heading h2, .cinema-list-heading h2 { margin: .35rem 0 0; color: #f6f0f2; font-family: 'Be Vietnam Pro', Inter, sans-serif; font-size: clamp(1.4rem, 2.6vw, 2rem); font-weight: 500; line-height: 1.25; }
+.cinema-movie-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; }
+.cinema-movie-card { overflow: hidden; border: 1px solid #443c40; border-radius: .7rem; background: #252123; text-decoration: none; transition: border-color .18s ease, background-color .18s ease; }
+.cinema-movie-card:hover { border-color: #896e79; background: #2b2529; }
+.cinema-movie-card article { height: 100%; }
+.cinema-movie-card__poster { position: relative; display: grid; aspect-ratio: 2 / 3; place-items: center; overflow: hidden; background: #1c191b; color: #a99da3; font-size: .85rem; }
+.cinema-movie-card__poster img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cinema-movie-card__poster--empty { aspect-ratio: 2 / 3; border-bottom: 1px solid #443c40; background: linear-gradient(145deg, #382d33, #211b1f); color: #cbbdc3; }
+.cinema-movie-card__fallback { display: flex; width: 100%; height: 100%; flex-direction: column; justify-content: space-between; gap: 1rem; padding: 1.25rem; }
+.cinema-movie-card__fallback span { color: #d4a6bb; font-size: .7rem; letter-spacing: .08em; }
+.cinema-movie-card__fallback strong { margin-block: auto; color: #f6f0f2; font-family: 'Be Vietnam Pro', Inter, sans-serif; font-size: clamp(1.15rem, 2vw, 1.6rem); font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; }
+.cinema-movie-card__fallback small { border-top: 1px solid #7a5967; padding-top: .75rem; color: #e8d8df; font-size: .75rem; }
+.cinema-movie-card__rating { position: absolute; top: .75rem; left: .75rem; border: 1px solid #6a565e; border-radius: .25rem; background: #191719ed; padding: .2rem .45rem; color: #f6f0f2; font-size: .75rem; }
+.cinema-movie-card__body { display: grid; gap: .5rem; padding: 1rem; }
+.cinema-movie-card__meta { display: flex; justify-content: space-between; gap: .75rem; color: #aa9ea3; font-size: .75rem; }
+.cinema-movie-card__meta span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cinema-movie-card__meta span:last-child { flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+.cinema-movie-card__body h3 { overflow: hidden; margin: 0; color: #f6f0f2; font-family: 'Be Vietnam Pro', Inter, sans-serif; font-size: 1rem; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.cinema-movie-card__version { margin: 0; color: #b9adb2; font-size: .75rem; }
+.cinema-movie-card__link { margin-top: .5rem; border-top: 1px solid #3e363b; padding-top: .75rem; color: #e8d8df; font-size: .85rem; }
+.cinema-info-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.cinema-skeleton { border: 1px solid #383236; border-radius: .75rem; background: #282326; }
+.cinema-skeleton--poster { aspect-ratio: 2 / 3; }
+.cinema-skeleton--row { min-height: 8rem; }
+.cinema-state { display: grid; min-height: 7rem; align-content: center; border: 1px solid #3b3438; border-radius: .75rem; background: #252123; padding: 1.5rem; color: #c9bfc3; }
+.cinema-state p, .cinema-state h2, .cinema-state h3 { margin: 0; }
+.cinema-state h2, .cinema-state h3 { color: #f6f0f2; font-size: 1rem; font-weight: 500; }
+.cinema-state--error { gap: .75rem; border-color: #875263; }
+.cinema-state button { justify-self: start; min-height: 2.75rem; border: 1px solid #67545d; border-radius: .6rem; background: #31282d; color: #f6f0f2; padding: .6rem 1rem; cursor: pointer; }
+.cinema-showtime { display: flex; min-width: 0; align-items: center; gap: 1rem; border: 1px solid #423b3e; border-radius: .75rem; background: #282326; padding: 1.25rem; text-decoration: none; }
+.cinema-showtime:hover, .cinema-promo-mini:hover { border-color: #8d6676; background: #2d272b; }
+.cinema-showtime__time { color: #f6f0f2; font-family: 'Be Vietnam Pro', Inter, sans-serif; font-size: 1.65rem; font-variant-numeric: tabular-nums; }
+.cinema-showtime__info { display: grid; min-width: 0; gap: .25rem; flex: 1; }
+.cinema-showtime__info strong { overflow: hidden; color: #f6f0f2; font-size: .9rem; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.cinema-showtime__info small { color: #b9adb2; font-size: .8rem; }
+.cinema-promo-mini { position: relative; display: grid; min-height: 12rem; align-content: start; gap: .6rem; overflow: hidden; border: 1px solid #54424a; border-radius: .75rem; background: #282326; padding: 1.25rem; text-decoration: none; }
+.cinema-promo-mini::after { position: absolute; right: 0; bottom: 2.75rem; left: 0; border-top: 1px dashed #6d565f; content: ''; }
+.cinema-promo-mini__value { color: #f28cb9; font-family: 'Be Vietnam Pro', Inter, sans-serif; font-size: 1.4rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.cinema-promo-mini__title { color: #f6f0f2; font-size: 1rem; font-weight: 500; }
+.cinema-promo-mini__description { display: -webkit-box; overflow: hidden; color: #c9bfc3; font-size: .85rem; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.cinema-promo-mini__action { align-self: end; margin-top: auto; padding-top: 1rem; color: #e7dce0; font-size: .85rem; }
+
+/* Home: film-led banner, one-cinema schedule, and promotion previews. */
+.home-page > main { min-width: 0; }
+.home-page :is(a, button):focus-visible { outline: 2px solid #f59e0b; outline-offset: 3px; }
+.home-hero { position: relative; isolation: isolate; min-height: clamp(34rem, 48vw, 43rem); overflow: hidden; border-bottom: 1px solid #40383c; background: #1d1a1c; }
+.home-hero__visual, .home-hero__shade { position: absolute; inset: 0; pointer-events: none; }
+.home-hero__visual { z-index: -2; }
+.home-hero__visual img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 32%; animation: home-hero-enter .35s ease both; }
+.home-hero__visual-fallback { display: grid; height: 100%; align-content: center; justify-items: end; gap: 1rem; background: #2c2629; padding: 5rem max(5vw, calc((100vw - 80rem) / 2)); color: #a998a0; }
+.home-hero__visual-fallback span { font-size: .9rem; letter-spacing: .2em; }
+.home-hero__visual-fallback strong { max-width: 28rem; color: #6a555e; font-family: 'Be Vietnam Pro', Inter, sans-serif; font-size: clamp(3rem, 8vw, 8rem); font-weight: 500; line-height: 1; text-align: right; }
+.home-hero__shade { z-index: -1; background: linear-gradient(90deg, rgb(12 9 11 / 94%) 0%, rgb(12 9 11 / 82%) 31%, rgb(12 9 11 / 36%) 66%, rgb(12 9 11 / 8%) 100%), linear-gradient(0deg, rgb(12 9 11 / 72%), transparent 34%); }
+.home-hero__inner { display: flex; width: min(100% - 2rem, 80rem); min-height: inherit; flex-direction: column; justify-content: center; gap: 2.5rem; margin-inline: auto; padding-block: 4rem 2rem; }
+.home-hero__copy { max-width: 37rem; animation: home-hero-enter .35s ease both; }
+.home-hero__label { margin: 0; color: #f4b2ce; font-size: .9rem; font-weight: 600; }
+.home-hero__label span { margin-inline: .25rem; color: #ab9fa4; }
+.home-hero h1 { margin: 1rem 0 0; color: #fff; font-family: 'Be Vietnam Pro', Inter, sans-serif; font-size: clamp(2.4rem, 5vw, 4.4rem); font-weight: 600; line-height: 1.13; letter-spacing: -.035em; overflow-wrap: anywhere; }
+.home-hero__meta { margin: 1rem 0 0; color: #eee5e9; font-size: .95rem; }
+.home-hero__description { display: -webkit-box; max-width: 34rem; overflow: hidden; margin: 1.25rem 0 0; color: #eee7ea; font-size: 1.05rem; line-height: 1.6; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.home-hero__actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.75rem; }
+.home-hero__secondary { display: inline-flex; min-height: 2.75rem; align-items: center; border: 1px solid #9d8d94; border-radius: .6rem; background: rgb(28 23 26 / 70%); padding: .65rem 1.2rem; color: #fff; font-weight: 600; text-decoration: none; }
+.home-hero__secondary:hover { background: #3b3036; }
+.home-hero__controls { display: flex; width: 100%; align-items: center; gap: .25rem; margin-top: auto; }
+.home-hero__count { min-width: 4rem; color: #f4e8ed; font-size: .8rem; font-variant-numeric: tabular-nums; }
+.home-hero__dots { display: flex; flex: 1; gap: .1rem; align-items: center; }
+.home-hero__dot { display: grid; width: 2.75rem; height: 2.75rem; place-items: center; border: 0; background: transparent; cursor: pointer; }
+.home-hero__dot::before { width: 1.5rem; height: .25rem; border-radius: 1rem; background: #a99da3; content: ''; }
+.home-hero__dot--active::before { background: #f28cb9; }
+.home-hero__pause { display: grid; width: 2.75rem; height: 2.75rem; flex: none; place-items: center; border: 1px solid #8d7b84; border-radius: 50%; background: rgb(28 23 26 / 76%); color: #fff; cursor: pointer; }
+.home-hero__pause svg { width: 1.1rem; height: 1.1rem; }
+.home-hero__pause:hover { background: #3b3036; }
+.home-hero__arrow { width: 2.75rem; height: 2.75rem; border: 1px solid #8d7b84; border-radius: 50%; background: rgb(28 23 26 / 76%); color: #fff; font: inherit; font-size: 1.25rem; cursor: pointer; }
+.home-hero__arrow:hover { background: #3b3036; }
+@keyframes home-hero-enter { from { opacity: .65; } to { opacity: 1; } }
+.home-movie-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; }
+.home-movie-grid:has(> :nth-child(2):last-child) { grid-template-columns: repeat(2, minmax(0, 18rem)); }
+.home-spotlight { display: grid; grid-template-columns: minmax(13rem, 17rem) minmax(0, 1fr); overflow: hidden; border: 1px solid #493e43; border-radius: .75rem; background: #252123; }
+.home-spotlight__poster .cinema-movie-card { height: 100%; border: 0; border-radius: 0; }
+.home-spotlight__poster .cinema-movie-card__poster { height: 100%; min-height: 22rem; aspect-ratio: auto; }
+.home-spotlight__poster .cinema-movie-card__body { display: none; }
+.home-spotlight__copy { display: grid; max-width: 45rem; align-content: center; justify-items: start; gap: 1rem; padding: 2rem; }
+.home-spotlight__copy h3 { margin: 0; color: #f6f0f2; font-family: 'Be Vietnam Pro', Inter, sans-serif; font-size: clamp(1.5rem, 2.8vw, 2.3rem); font-weight: 500; }
+.home-spotlight__copy > p:not(.cinema-kicker) { max-width: 36rem; margin: 0; color: #c9bfc3; line-height: 1.6; }
+.home-spotlight__meta { display: flex; flex-wrap: wrap; gap: .5rem; }
+.home-spotlight__meta span { border: 1px solid #55454d; border-radius: .35rem; padding: .25rem .55rem; color: #e2d6dc; font-size: .8rem; }
+.home-spotlight__next { display: flex; width: 100%; flex-wrap: wrap; align-items: baseline; gap: .5rem 1rem; border-block: 1px solid #45383e; padding-block: .8rem; color: #c9bfc3; font-size: .85rem; }
+.home-spotlight__next strong { color: #f6f0f2; font-size: 1.35rem; font-variant-numeric: tabular-nums; }
+.home-spotlight__next span:last-child { overflow-wrap: anywhere; }
+.home-schedule { overflow: hidden; border: 1px solid #493e43; border-radius: .75rem; background: #1c191b; }
+.home-page #showtimes { scroll-margin-top: 5rem; }
+.home-schedule__venue { display: flex; align-items: center; gap: 1rem; padding: 1.5rem; }
+.home-schedule__mark { display: grid; width: 3rem; height: 3rem; flex: none; place-items: center; border: 1px solid #ed85b3; border-radius: .5rem; background: #3b2030; color: #f4b2ce; font-family: 'Be Vietnam Pro', Inter, sans-serif; font-size: 1.5rem; font-weight: 600; }
+.home-schedule__venue h3 { margin: .2rem 0 0; color: #f6f0f2; font-family: 'Be Vietnam Pro', Inter, sans-serif; font-size: 1.15rem; font-weight: 500; }
+.home-schedule__venue p:last-child { margin: .2rem 0 0; color: #bfb4b9; font-size: .85rem; }
+.home-schedule__venue-count { display: grid; justify-items: end; gap: .1rem; margin-left: auto; color: #bfb4b9; font-size: .75rem; white-space: nowrap; }
+.home-schedule__venue-count strong { color: #f6f0f2; font-size: 1.4rem; line-height: 1; }
+.home-schedule__dates { display: flex; gap: .5rem; overflow-x: auto; border-block: 1px solid #42383d; background: #221d20; padding: .8rem 1.5rem; scrollbar-color: #594a51 transparent; }
+.home-schedule__date { display: grid; min-width: 6.25rem; min-height: 5.5rem; flex: 0 0 6.25rem; align-content: center; justify-items: center; gap: .1rem; border: 1px solid #55484e; border-radius: .5rem; background: #2b2529; color: #e8dfe3; font: inherit; cursor: pointer; }
+.home-schedule__date:hover { border-color: #bd95a6; }
+.home-schedule__date[aria-pressed='true'] { border-color: #f28cb9; background: #cb0b6f; color: #fff; }
+.home-schedule__date span, .home-schedule__date small { font-size: .75rem; }
+.home-schedule__date strong { font-size: 1.35rem; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.home-schedule__day-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: 1.15rem 1.5rem; }
+.home-schedule__day-heading h3 { margin: 0; color: #f6f0f2; font-size: 1rem; font-weight: 600; text-transform: capitalize; }
+.home-schedule__day-heading span { color: #bfb4b9; font-size: .85rem; white-space: nowrap; }
+.home-schedule__films { display: grid; }
+.home-schedule__film { display: grid; grid-template-columns: 8rem minmax(0, 1fr); gap: 1.5rem; border-top: 1px solid #42383d; padding: 1.5rem; }
+.home-schedule__poster { display: grid; width: 8rem; aspect-ratio: 2 / 3; align-self: start; place-items: center; overflow: hidden; border: 1px solid #55484e; border-radius: .45rem; background: #30282d; color: #bfb4b9; font-size: .75rem; }
+.home-schedule__poster img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.home-schedule__film-body { min-width: 0; }
+.home-schedule__film-heading { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }
+.home-schedule__film-heading h4 { margin: .2rem 0 0; color: #f6f0f2; font-family: 'Be Vietnam Pro', Inter, sans-serif; font-size: 1.15rem; font-weight: 600; overflow-wrap: anywhere; }
+.home-schedule__film-heading p { margin: .35rem 0 0; color: #bfb4b9; font-size: .85rem; }
+.home-schedule__film-heading > a { display: inline-flex; min-height: 2.75rem; align-items: center; gap: .4rem; color: #f4b2ce; font-size: .85rem; text-decoration: none; white-space: nowrap; }
+.home-schedule__film-heading > a:hover { text-decoration: underline; }
+.home-schedule__age { display: inline-block; border-radius: .25rem; background: #9a3e24; padding: .1rem .35rem; color: #fff; font-size: .7rem; }
+.home-schedule__room { margin-top: 1.25rem; border: 1px solid #493e43; border-radius: .6rem; background: #272226; padding: 1rem; }
+.home-schedule__room-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem; color: #e8dfe3; font-size: .85rem; }
+.home-schedule__room-heading strong { font-weight: 600; }
+.home-schedule__room-heading span { color: #bfb4b9; }
+.home-schedule__times { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: .8rem; }
+.home-schedule__time { display: grid; min-width: 7.5rem; min-height: 6.25rem; align-content: center; gap: .1rem; border: 1px solid var(--period-border, #79616b); border-radius: .5rem; background: #1d191c; padding: .5rem .8rem; color: #f6f0f2; text-decoration: none; transition: background-color .15s ease, transform .15s ease; }
+.home-schedule__time[data-period='Sáng'] { --period-border: #a78356; }
+.home-schedule__time[data-period='Chiều'] { --period-border: #a96b75; }
+.home-schedule__time[data-period='Tối'] { --period-border: #8380b4; }
+.home-schedule__time:hover { background: #3b3036; transform: translateY(-2px); }
+.home-schedule__period { color: #d9cbd1; font-size: .7rem; }
+.home-schedule__time strong { font-size: 1.2rem; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.home-schedule__time small { color: #bfb4b9; font-size: .75rem; }
+.home-schedule__empty { border-top: 1px solid #42383d; padding: 2rem 1.5rem; }
+.home-schedule__empty h4 { margin: 0; color: #f6f0f2; font-size: 1rem; }
+.home-schedule__empty p { margin: .4rem 0 0; color: #bfb4b9; }
+.home-schedule__loading { display: grid; gap: 1rem; padding: 0 1.5rem 1.5rem; }
+.home-schedule__note { margin: 0; border-top: 1px solid #42383d; padding: 1rem 1.5rem; color: #bfb4b9; font-size: .8rem; }
+.home-promotions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
+.home-promotions:has(> :first-child:last-child) { grid-template-columns: minmax(0, 1fr); }
+.home-promotions:has(> :first-child:last-child) .home-promotion { grid-template-columns: minmax(16rem, .42fr) minmax(0, 1fr); grid-template-rows: minmax(15rem, auto); }
+.home-promotion { display: grid; grid-template-rows: 11rem 1fr; overflow: hidden; border: 1px solid #55424a; border-radius: .75rem; background: #272226; color: inherit; text-decoration: none; transition: border-color .15s ease, transform .15s ease; }
+.home-promotion:hover { border-color: #b98399; transform: translateY(-2px); }
+.home-promotion__visual { overflow: hidden; background: #3b2832; }
+.home-promotion__visual img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.home-promotion__visual-fallback { display: grid; height: 100%; align-content: space-between; border-bottom: 1px dashed #986d7f; padding: 1rem; color: #f4b2ce; }
+.home-promotion__visual-fallback span { font-size: .75rem; }
+.home-promotion__visual-fallback strong { color: #fff; font-family: 'Be Vietnam Pro', Inter, sans-serif; font-size: clamp(1.5rem, 2.4vw, 2rem); font-weight: 600; line-height: 1.2; }
+.home-promotion__body { display: flex; min-height: 12rem; flex-direction: column; gap: .5rem; padding: 1.2rem; }
+.home-promotion__eyebrow { color: #f4b2ce; font-size: .75rem; }
+.home-promotion__body h3 { margin: 0; color: #f6f0f2; font-size: 1.1rem; font-weight: 600; line-height: 1.4; }
+.home-promotion__body p { display: -webkit-box; overflow: hidden; margin: 0; color: #c9bfc3; font-size: .85rem; line-height: 1.5; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.home-promotion__foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem; margin-top: auto; padding-top: 1rem; color: #bfb4b9; font-size: .8rem; }
+.home-promotion__foot span:last-child { color: #f4b2ce; }
+@media (max-width: 64rem) {
+  .home-movie-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .home-promotions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 48rem) {
+  .home-hero { min-height: 36rem; }
+  .home-hero__shade { background: linear-gradient(90deg, rgb(12 9 11 / 93%), rgb(12 9 11 / 55%) 80%), linear-gradient(0deg, rgb(12 9 11 / 70%), transparent 45%); }
+  .home-hero__inner { padding-block: 3rem 1.5rem; }
+  .home-spotlight { grid-template-columns: minmax(11rem, .6fr) minmax(0, 1fr); }
+  .home-schedule__film { grid-template-columns: 6rem minmax(0, 1fr); gap: 1rem; }
+  .home-schedule__poster { width: 6rem; }
+}
+@media (max-width: 36rem) {
+  .home-hero { min-height: 38rem; }
+  .home-hero__visual img { object-position: 62% center; }
+  .home-hero__shade { background: linear-gradient(180deg, rgb(12 9 11 / 78%) 0%, rgb(12 9 11 / 74%) 55%, rgb(12 9 11 / 58%) 100%); }
+  .home-hero h1 { font-size: clamp(2.15rem, 9vw, 3rem); }
+  .home-hero__inner { gap: 2rem; }
+  .home-hero__actions { align-items: stretch; flex-direction: column; }
+  .home-hero__controls { flex-wrap: wrap; }
+  .home-movie-grid, .home-movie-grid:has(> :nth-child(2):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+  .home-spotlight { grid-template-columns: 1fr; }
+  .home-spotlight__poster .cinema-movie-card__poster { height: 14rem; min-height: 0; aspect-ratio: auto; }
+  .home-spotlight__copy { padding: 1.25rem; }
+  .home-schedule__venue { align-items: start; padding: 1rem; }
+  .home-schedule__venue-count { display: none; }
+  .home-schedule__dates { padding: .75rem 1rem; }
+  .home-schedule__day-heading { align-items: start; flex-direction: column; gap: .25rem; padding: 1rem; }
+  .home-schedule__film { grid-template-columns: 4.5rem minmax(0, 1fr); gap: .75rem; padding: 1rem; }
+  .home-schedule__poster { width: 4.5rem; }
+  .home-schedule__film-body { display: contents; }
+  .home-schedule__film-heading { align-items: start; flex-direction: column; gap: .25rem; }
+  .home-schedule__room { grid-column: 1 / -1; margin-top: .25rem; padding: .75rem; }
+  .home-schedule__times { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-schedule__time { min-width: 0; }
+  .home-schedule__note { padding: 1rem; }
+  .home-promotions, .home-promotions:has(> :first-child:last-child) { grid-template-columns: 1fr; }
+  .home-promotions:has(> :first-child:last-child) .home-promotion { grid-template-columns: 1fr; grid-template-rows: 11rem 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-hero__visual img, .home-hero__copy { animation: none; }
+  .home-hero__pause { display: none; }
+  .home-schedule__time:hover, .home-promotion:hover { transform: none; }
+}
+.cinema-page-inner { width: min(100% - 2rem, 80rem); margin-inline: auto; padding-block: 2rem 3.5rem; }
+.cinema-page-heading { display: flex; align-items: end; justify-content: space-between; gap: 2rem; border-bottom: 1px solid #383236; padding: 1.5rem 0 1.75rem; }
+.cinema-page-heading h1, .cinema-promotion-heading h1 { margin: .6rem 0 0; color: #f6f0f2; font-family: 'Be Vietnam Pro', Inter, sans-serif; font-size: clamp(2rem, 4vw, 3.1rem); font-weight: 500; line-height: 1.18; letter-spacing: -.03em; }
+.cinema-page-heading p:not(.cinema-kicker), .cinema-promotion-heading p:not(.cinema-kicker) { max-width: 36rem; margin: .8rem 0 0; color: #c9bfc3; line-height: 1.6; }
+.cinema-page-heading__count { display: grid; min-width: 8rem; gap: .15rem; border-left: 1px solid #594b52; padding-left: 1rem; color: #c9bfc3; font-size: .85rem; }
+.cinema-page-heading__count strong { color: #f6f0f2; font-size: 1.55rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.cinema-filters { display: grid; gap: 1rem; margin-top: 1.5rem; border: 1px solid #423b3e; border-radius: .75rem; background: #242123; padding: 1.25rem; }
+.cinema-search-input { width: 100%; min-height: 2.75rem; border: 1px solid #51454b; border-radius: .6rem; background: #191719; padding: .65rem 1rem .65rem 2.75rem; color: #f6f0f2; font: inherit; }
+.cinema-search-input::placeholder { color: #a99da3; }
+.cinema-filter-bottom { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.cinema-tabs { display: flex; gap: 1.25rem; border-bottom: 1px solid #51454b; }
+.cinema-tabs button { position: relative; min-height: 2.75rem; border: 0; background: transparent; padding: .5rem .1rem; color: #bfb4b9; font: inherit; cursor: pointer; }
+.cinema-tabs button[aria-pressed="true"] { color: #f6f0f2; }
+.cinema-tabs button[aria-pressed="true"]::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: #f28cb9; content: ''; }
+.cinema-filter-reset, .cinema-filter-query button { border: 0; background: transparent; color: #c9bfc3; font: inherit; cursor: pointer; }
+.cinema-filter-reset:hover, .cinema-filter-query button:hover { color: #f28cb9; }
+.cinema-filter-query { margin: 0; color: #c9bfc3; font-size: .85rem; }
+.cinema-list-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-top: 2rem; }
+.cinema-list-heading p { color: #b9adb2; font-size: .85rem; }
+.cinema-promotion-heading { border-bottom: 1px solid #383236; background: #1d1a1c; }
+.cinema-promotion-heading .cinema-page-inner { padding-block: 1.75rem 2.5rem; }
+.cinema-breadcrumb { display: flex; gap: .6rem; margin-bottom: 1.75rem; color: #aa9ea3; font-size: .8rem; }
+.cinema-breadcrumb a:hover { color: #f28cb9; }
+.cinema-promotion-list { padding-block: 2rem 3.5rem; }
+
+/* A ticket edge appears only on the offer itself. */
+.promotion-list__card { border-color: #4c4247; border-radius: .75rem; background: #252123; box-shadow: none; }
+.promotion-list__visual { min-height: 11rem; background: #30282d; }
+.promotion-list__visual-fallback { position: relative; align-items: flex-start; gap: .75rem; min-height: 11rem; background: #30282d; padding: 1.5rem; color: #f6f0f2; font-size: 1rem; font-weight: 400; letter-spacing: 0; }
+.promotion-list__visual-fallback::after, .promotion-detail__visual-fallback::after { position: absolute; right: 0; bottom: 0; left: 0; border-top: 1px dashed #806471; content: ''; }
+.promotion-list__visual-label { color: #d9bdc8; font-size: .8rem; }
+.promotion-list__visual-fallback strong { color: #f28cb9; font-family: 'Be Vietnam Pro', Inter, sans-serif; font-size: clamp(1.7rem, 3vw, 2.4rem); font-weight: 500; font-variant-numeric: tabular-nums; }
+.promotion-list__visual-title { max-width: 20rem; color: #e7dce0; font-size: .85rem; line-height: 1.45; }
+.promotion-list__content { padding: 1.5rem; }
+.promotion-list__discount { color: #f28cb9; font-size: .8rem; font-weight: 500; letter-spacing: 0; text-transform: none; }
+.promotion-list__content h2 { font-weight: 500; }
+.promotion-list__expiry { padding-top: 1.25rem; color: #b9adb2; }
+.promotion-list__content a { align-self: flex-start; min-height: 2.75rem; border: 1px solid #66545c; border-radius: .6rem; background: transparent; padding: .6rem 1rem; color: #f4e8ed; font-weight: 500; }
+.promotion-list__content a:hover { border-color: #a47b8d; background: #312a2e; }
+.promotion-list__grid--single .promotion-list__card { grid-template-columns: minmax(0, .65fr) minmax(0, 1.35fr); }
+.promotion-list__grid--single .promotion-list__visual, .promotion-list__grid--single .promotion-list__visual-fallback { min-height: 17rem; }
+.promotion-list__grid--single .promotion-list__content { padding: clamp(1.5rem, 3vw, 2.25rem); }
+.promotion-detail { grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr); border-color: #4c4247; border-radius: .75rem; background: #252123; box-shadow: none; }
+.promotion-detail--text-only { display: block; max-width: 54rem; }
+.promotion-detail__visual { min-height: 29rem; background: #30282d; }
+.promotion-detail__visual-fallback { position: relative; align-items: flex-start; min-height: 29rem; gap: 1rem; background: #30282d; padding: 2rem; color: #e7dce0; font-family: Inter, sans-serif; font-size: .9rem; font-weight: 400; letter-spacing: 0; }
+.promotion-detail__visual-fallback strong { color: #f28cb9; font-family: 'Be Vietnam Pro', Inter, sans-serif; font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 500; font-variant-numeric: tabular-nums; }
+.promotion-detail__visual-fallback small { max-width: 18rem; color: #f6f0f2; font-size: 1rem; line-height: 1.5; }
+.promotion-detail__content { padding: clamp(1.5rem, 3vw, 2.5rem); }
+.promotion-detail__eyebrow { color: #d9bdc8; font-size: .85rem; font-weight: 500; letter-spacing: 0; text-transform: none; }
+.promotion-detail h1 { font-weight: 500; }
+.promotion-detail__discount { border-color: #65505b; border-radius: .65rem; background: #30282d; }
+.promotion-detail__discount span { color: #d9bdc8; font-weight: 500; }
+.promotion-detail__discount strong { color: #f28cb9; font-weight: 500; font-variant-numeric: tabular-nums; }
+.promotion-detail__section h2 { font-weight: 500; }
+.promotion-detail__dates > div { border: 1px solid #423b3e; border-radius: .55rem; background: #201d1f; }
+.promotion-detail__dates dt { font-weight: 500; }
+.promotion-detail__actions a, .promotion-detail__state-actions a, .promotion-detail__state-actions button { font-weight: 500; }
+.promotion-detail__actions .promotion-detail__primary { border-color: #f28cb9; background: #f28cb9; color: #2a1120; }
+@media (max-width: 64rem) { .cinema-movie-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }.cinema-info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 48rem) { .cinema-hero__inner, .cinema-hero--with-visual .cinema-hero__inner { display: grid; grid-template-columns: 1fr; min-height: 0; gap: 1.5rem; padding-block: 2.5rem; }.cinema-hero__visual { height: 17rem; }.cinema-section { padding-block: 2.5rem; }.cinema-movie-grid, .cinema-info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }.cinema-page-heading { align-items: start; flex-direction: column; gap: 1rem; }.cinema-page-heading__count { display: flex; align-items: baseline; gap: .5rem; border-left: 0; padding-left: 0; }.cinema-promotion-heading .cinema-page-inner { padding-block: 1.5rem 2rem; }.promotion-detail { grid-template-columns: 1fr; }.promotion-detail__visual, .promotion-detail__visual-fallback { min-height: 13rem; max-height: 17rem; }.promotion-list__grid--single .promotion-list__visual, .promotion-list__grid--single .promotion-list__visual-fallback { min-height: 11rem; max-height: none; } }
+@media (max-width: 36rem) { .cinema-movie-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }.cinema-info-grid { grid-template-columns: 1fr; }.cinema-section__heading { align-items: start; flex-direction: column; }.cinema-filter-bottom { align-items: start; flex-direction: column; }.cinema-tabs { width: 100%; }.cinema-tabs button { flex: 1; }.cinema-hero__actions { align-items: stretch; flex-direction: column; }.cinema-hero__actions .cinema-text-link { justify-content: center; } }
+@media (max-width: 48rem) { .cinema-public main, .promotion-detail-page main { padding-bottom: calc(5rem + env(safe-area-inset-bottom)); } }
+
+/* Movie detail uses local semantic tokens so the public pages retain their own theme. */
+.movie-detail-page {
+  --movie-canvas: #000000;
+  --movie-surface: #1c171a;
+  --movie-surface-hover: #30282d;
+  --movie-heading: #f5f4f5;
+  --movie-body: #d1d5db;
+  --movie-muted: #bdb5b9;
+  --movie-accent: #cb0b6f;
+  --movie-accent-hover: #a9095c;
+  --movie-accent-text: #f28cb9;
+  --movie-on-accent: #f5f4f5;
+  --movie-focus: #f59e0b;
+  --movie-border: rgb(255 255 255 / 16%);
+  --movie-control-border: #756b70;
+  min-height: 100vh;
+  background: var(--movie-canvas);
+  color: var(--movie-body);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.movie-detail-page :is(a, button):focus-visible { outline: 2px solid var(--movie-focus); outline-offset: 2px; }
+.movie-detail-page :is(a, button) { -webkit-tap-highlight-color: transparent; }
+.movie-detail-main { min-height: 70vh; padding-top: 5rem; padding-bottom: 4rem; }
+.movie-detail-container { width: min(100% - 2rem, 75rem); margin-inline: auto; }
+.movie-hero { position: relative; isolation: isolate; min-height: clamp(40rem, 52vw, 50rem); overflow: hidden; border-bottom: 1px solid var(--movie-border); background: var(--movie-canvas); }
+.movie-hero__backdrop { position: absolute; z-index: -3; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 38%; }
+.movie-hero__blur { position: absolute; z-index: -2; inset: 0 32% 0 0; backdrop-filter: blur(24px) saturate(.8); mask-image: linear-gradient(90deg, #000 0%, #000 52%, transparent 100%); }
+.movie-hero__scrim { position: absolute; z-index: -1; inset: 0; background: linear-gradient(90deg, rgb(0 0 0 / 84%) 0%, rgb(0 0 0 / 72%) 30%, rgb(0 0 0 / 38%) 54%, rgb(0 0 0 / 8%) 78%), linear-gradient(0deg, rgb(0 0 0 / 58%), transparent 40%); }
+.movie-hero__inner { display: grid; grid-template-columns: minmax(0, .95fr) minmax(18rem, 1fr); align-items: center; gap: clamp(2rem, 6vw, 5rem); min-height: inherit; padding-block: 3rem; }
+.movie-hero--no-trailer .movie-hero__inner { grid-template-columns: 1fr; }
+.movie-hero--no-image { min-height: 26rem; }
+.movie-hero--no-image .movie-hero__inner { min-height: 26rem; }
+.movie-hero__content { max-width: 40rem; min-width: 0; }
+.movie-detail-breadcrumb { display: flex; align-items: center; gap: .75rem; margin-bottom: 2rem; color: var(--movie-muted); font-size: .875rem; }
+.movie-detail-breadcrumb a:hover { color: var(--movie-heading); text-decoration: underline; }
+.movie-hero__labels { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-bottom: 1rem; color: var(--movie-heading); font-size: .875rem; }
+.movie-hero__labels > span { border: 1px solid var(--movie-border); border-radius: .375rem; background: rgb(0 0 0 / 70%); padding: .25rem .5rem; }
+.movie-hero__labels .movie-hero__age { border-color: var(--movie-focus); background: var(--movie-focus); color: var(--movie-canvas); font-weight: 600; }
+.movie-hero h1 { max-width: 43rem; margin: 0; color: var(--movie-heading); font-family: 'Be Vietnam Pro', Inter, sans-serif; font-size: clamp(1.875rem, 3.5vw, 2.5rem); font-weight: 600; line-height: 1.2; letter-spacing: -.025em; overflow-wrap: anywhere; }
+.movie-hero__meta { margin: .75rem 0 0; color: var(--movie-body); font-size: .875rem; line-height: 1.45; }
+.movie-hero__actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.75rem; }
+.movie-hero__actions a { display: inline-flex; min-height: 3rem; align-items: center; justify-content: center; gap: .5rem; padding: .625rem 1rem; font-weight: 600; text-decoration: none; }
+.movie-hero__actions svg { width: 1.25rem; height: 1.25rem; flex: none; }
+.movie-hero__secondary { border: 1px solid var(--movie-border); border-radius: .5rem; background: rgb(28 23 26 / 80%); color: var(--movie-heading); transition: background-color .15s ease, border-color .15s ease; }
+.movie-hero__secondary:hover { border-color: var(--movie-muted); background: var(--movie-surface-hover); }
+.movie-hero__secondary:active { transform: translateY(1px); }
+.movie-hero__details { margin-top: 2rem; }
+.movie-hero__details--with-poster { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 1.25rem; }
+.movie-hero__details-copy { min-width: 0; }
+.movie-hero__synopsis { max-width: 40rem; }
+.movie-hero__synopsis h2 { margin: 0 0 .5rem; color: var(--movie-muted); font-size: .75rem; font-weight: 600; line-height: 1.4; }
+.movie-hero__synopsis p { margin: 0; color: var(--movie-body); line-height: 1.6; white-space: pre-line; }
+.movie-hero__synopsis--clamped { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.movie-hero__synopsis button { min-height: 2.75rem; margin-top: .25rem; border: 0; background: transparent; padding: .35rem 0; color: var(--movie-accent-text); cursor: pointer; }
+.movie-hero__synopsis button:hover { text-decoration: underline; }
+.movie-hero__facts { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; margin: 1.5rem 0 0; }
+.movie-hero__facts > div { min-width: 7rem; }
+.movie-hero__facts dt { color: var(--movie-muted); font-size: .75rem; line-height: 1.4; }
+.movie-hero__facts dd { margin: .25rem 0 0; color: var(--movie-heading); font-size: .875rem; line-height: 1.4; }
+.movie-detail-primary { display: inline-flex; min-height: 2.75rem; align-items: center; justify-content: center; border: 1px solid var(--movie-accent); border-radius: .5rem; background: var(--movie-accent); padding: .625rem 1.25rem; color: var(--movie-on-accent); font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; transition: background-color .15s ease, border-color .15s ease; }
+.movie-detail-primary:hover { border-color: var(--movie-accent-hover); background: var(--movie-accent-hover); }
+.movie-detail-primary:active { transform: translateY(1px); }
+.movie-hero__poster { display: grid; width: 7.5rem; aspect-ratio: 2 / 3; place-items: center; overflow: hidden; border: 1px solid var(--movie-border); border-radius: .5rem; background: var(--movie-surface); color: var(--movie-muted); font-size: .875rem; text-align: center; }
+.movie-hero__poster-image { display: block; width: 100%; height: 100%; object-fit: cover; }
+.movie-hero__media { display: grid; min-width: 0; min-height: 20rem; align-self: stretch; place-items: center; }
+.movie-hero__play { position: relative; z-index: 1; display: grid; width: 6.25rem; height: 6.25rem; place-items: center; border: 2px solid var(--movie-heading); border-radius: 50%; background: rgb(0 0 0 / 45%); color: var(--movie-heading); cursor: pointer; transition: background-color .15s ease, transform .15s ease; }
+.movie-hero__play svg { width: 2.75rem; height: 2.75rem; margin-left: .25rem; }
+.movie-hero__play:hover { background: rgb(0 0 0 / 75%); transform: scale(1.05); }
+.movie-hero__play:active { transform: scale(.96); }
+.movie-showtimes, .movie-detail-related, .movie-detail-facts { padding-block: 3rem; }
+.movie-showtimes { scroll-margin-top: 6rem; }
+.movie-detail-facts { scroll-margin-top: 6rem; }
+.movie-detail-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+.movie-detail-section-heading h2, .movie-detail-facts h2 { margin: 0; color: var(--movie-heading); font-family: 'Be Vietnam Pro', Inter, sans-serif; font-size: 1.25rem; font-weight: 500; line-height: 1.4; }
+.movie-detail-section-heading p { margin: .4rem 0 0; color: var(--movie-muted); font-size: .875rem; }
+.movie-detail-section-heading > a { min-height: 2.75rem; display: inline-flex; align-items: center; gap: .5rem; color: var(--movie-accent-text); font-size: .875rem; text-decoration: none; }
+.movie-detail-section-heading > a:hover { text-decoration: underline; }
+.movie-showtimes__dates { display: flex; max-width: 100%; gap: .5rem; overflow-x: auto; padding: .125rem .125rem .75rem; scrollbar-color: var(--movie-border) transparent; }
+.movie-showtimes__date { display: grid; min-width: 6.5rem; min-height: 6.5rem; flex: 1 0 6.5rem; align-content: center; justify-items: center; border: 1px solid var(--movie-control-border); border-radius: .5rem; background: var(--movie-surface); padding: .5rem; color: var(--movie-body); font: inherit; cursor: pointer; transition: background-color .15s ease, border-color .15s ease; }
+.movie-showtimes__date:hover { border-color: var(--movie-muted); background: var(--movie-surface-hover); }
+.movie-showtimes__date[aria-pressed='true'] { border: 2px solid var(--movie-focus); background: var(--movie-accent); color: var(--movie-on-accent); }
+.movie-showtimes__date:active { transform: translateY(1px); }
+.movie-showtimes__date span, .movie-showtimes__date small { font-size: .8125rem; line-height: 1.25; }
+.movie-showtimes__date strong { font-size: 1.5rem; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.movie-showtimes__summary { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--movie-border); padding: 1rem 0; }
+.movie-showtimes__summary h3 { margin: 0; color: var(--movie-heading); font-size: 1rem; font-weight: 600; }
+.movie-showtimes__summary p { margin: 0; color: var(--movie-muted); font-size: .875rem; white-space: nowrap; }
+.movie-showtimes__rooms { display: grid; }
+.movie-showtimes__room { display: grid; grid-template-columns: minmax(10rem, .3fr) minmax(0, 1fr); gap: 1rem 2rem; border-bottom: 1px solid var(--movie-border); padding: 1.5rem 0; }
+.movie-showtimes__room header { min-width: 0; }
+.movie-showtimes__room h4 { margin: 0; color: var(--movie-heading); font-size: 1rem; font-weight: 600; overflow-wrap: anywhere; }
+.movie-showtimes__room header span { color: var(--movie-muted); font-size: .8125rem; }
+.movie-showtimes__slots { display: flex; flex-wrap: wrap; gap: .625rem; }
+.movie-showtimes__slot { display: grid; min-width: 7.5rem; min-height: 4.25rem; align-content: center; gap: .15rem; border: 1px solid var(--movie-control-border); border-radius: .5rem; background: var(--movie-surface); padding: .5rem .75rem; color: var(--movie-heading); text-align: center; text-decoration: none; transition: background-color .15s ease, border-color .15s ease; }
+.movie-showtimes__slot:hover { border-color: var(--movie-accent-text); background: var(--movie-surface-hover); }
+.movie-showtimes__slot:active { transform: translateY(1px); }
+.movie-showtimes__slot strong { font-size: 1.125rem; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.movie-showtimes__slot small { color: var(--movie-muted); font-size: .75rem; line-height: 1.3; }
+.movie-showtimes__slot--disabled { opacity: .55; cursor: not-allowed; }
+.movie-showtimes__note { margin: 1rem 0 0; color: var(--movie-muted); font-size: .8125rem; }
+.movie-detail-state { display: grid; min-height: 9rem; align-content: center; gap: .25rem; padding: 1.5rem 0; }
+.movie-detail-state h3 { margin: 0; color: var(--movie-heading); font-size: 1rem; font-weight: 600; }
+.movie-detail-state p { margin: 0; color: var(--movie-muted); font-size: .875rem; }
+.movie-detail-state--error { color: var(--movie-heading); }
+.movie-detail-state button, .movie-detail-failure button, .movie-detail-failure a, .movie-trailer__heading button { width: fit-content; min-height: 2.75rem; border: 1px solid var(--movie-control-border); border-radius: .5rem; background: var(--movie-surface); padding: .55rem 1rem; color: var(--movie-heading); font: inherit; text-decoration: none; cursor: pointer; }
+.movie-detail-state button { margin-top: .75rem; }
+.movie-detail-state button:hover, .movie-detail-failure button:hover, .movie-detail-failure a:hover, .movie-trailer__heading button:hover { background: var(--movie-surface-hover); }
+.movie-detail-related, .movie-detail-facts { border-top: 1px solid var(--movie-border); }
+.movie-detail-related__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+.movie-detail-related__grid .cinema-movie-card { min-width: 0; }
+.movie-detail-facts { padding-bottom: 1rem; }
+.movie-detail-facts dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 2rem; max-width: 60rem; margin: 1.25rem 0 0; }
+.movie-detail-facts dl > div { display: grid; grid-template-columns: minmax(8rem, .4fr) minmax(0, 1fr); gap: 1rem; border-bottom: 1px solid var(--movie-border); padding: .75rem 0; font-size: .875rem; }
+.movie-detail-facts dt { color: var(--movie-muted); }
+.movie-detail-facts dd { min-width: 0; margin: 0; color: var(--movie-heading); overflow-wrap: anywhere; }
+.movie-detail-loading { display: grid; grid-template-columns: 13.75rem minmax(0, 1fr); gap: 2rem; padding-top: 3rem; }
+.movie-detail-skeleton { border-radius: .5rem; background: var(--movie-surface-hover); }
+.movie-detail-skeleton--poster { grid-row: span 2; aspect-ratio: 2 / 3; }
+.movie-detail-loading__copy { display: grid; align-content: center; gap: 1rem; }
+.movie-detail-skeleton--title { width: min(100%, 28rem); height: 3rem; }
+.movie-detail-skeleton--line { width: min(100%, 36rem); height: 1.25rem; }
+.movie-detail-skeleton--room { height: 5.5rem; }
+.movie-showtimes__loading { display: grid; gap: 1rem; padding-top: 1rem; }
+.movie-detail-failure { padding-block: 5rem; }
+.movie-detail-failure h1 { color: var(--movie-heading); font-size: 1.875rem; font-weight: 600; }
+.movie-detail-failure p { color: var(--movie-muted); }
+.movie-detail-failure > div { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.5rem; }
+.movie-trailer { width: min(60rem, calc(100vw - 2rem)); max-width: none; max-height: calc(100dvh - 2rem); overflow: auto; border: 1px solid var(--movie-border); border-radius: .75rem; background: var(--movie-surface); padding: 0; color: var(--movie-heading); }
+.movie-trailer::backdrop { background: rgb(0 0 0 / 70%); backdrop-filter: blur(8px); }
+.movie-trailer__close { position: absolute; z-index: 2; top: .5rem; right: .5rem; display: grid; width: 2.75rem; height: 2.75rem; place-items: center; border: 2px solid var(--movie-heading); border-radius: 50%; background: rgb(0 0 0 / 75%); color: var(--movie-heading); font: inherit; font-size: 1.75rem; line-height: 1; cursor: pointer; }
+.movie-trailer__close:hover { background: var(--movie-surface-hover); }
+.movie-trailer__video { position: relative; width: 100%; aspect-ratio: 16 / 9; background: var(--movie-canvas); }
+.movie-trailer__video iframe { display: block; width: 100%; height: 100%; border: 0; }
+.movie-trailer__loading { position: absolute; inset: 0; display: grid; place-items: center; background: var(--movie-canvas); color: var(--movie-body); }
+.movie-trailer__details { padding: 1.5rem; }
+.movie-trailer__details--with-poster { display: grid; grid-template-columns: 6rem minmax(0, 1fr); gap: 1.25rem; }
+.movie-trailer__poster { display: grid; width: 6rem; aspect-ratio: 2 / 3; place-items: center; overflow: hidden; border: 1px solid var(--movie-border); border-radius: .4rem; color: var(--movie-muted); font-size: .75rem; text-align: center; }
+.movie-trailer__poster-image { display: block; width: 100%; height: 100%; object-fit: cover; }
+.movie-trailer__copy { min-width: 0; }
+.movie-trailer__copy h3 { margin: 0; color: var(--movie-heading); font-family: 'Be Vietnam Pro', Inter, sans-serif; font-size: 1.25rem; font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
+.movie-trailer__meta { margin: .25rem 0 0; color: var(--movie-muted); font-size: .875rem; }
+.movie-trailer__synopsis { display: -webkit-box; max-width: 48rem; overflow: hidden; margin: .5rem 0 0; color: var(--movie-body); font-size: .875rem; line-height: 1.5; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.movie-trailer__error { margin: .75rem 0 0; color: var(--movie-heading); font-size: .875rem; }
+.movie-trailer__actions { display: flex; flex-wrap: wrap; align-items: center; gap: .625rem; margin-top: 1rem; }
+.movie-trailer__actions button { min-height: 2.75rem; border: 1px solid var(--movie-control-border); border-radius: .5rem; background: var(--movie-surface-hover); padding: .625rem 1rem; color: var(--movie-heading); font: inherit; cursor: pointer; }
+.movie-trailer__actions button:hover { border-color: var(--movie-heading); }
+.movie-trailer__actions > a:last-child { display: inline-flex; min-height: 2.75rem; align-items: center; padding: .625rem 0; color: var(--movie-accent-text); font-size: .875rem; }
+.movie-trailer__actions > a:last-child:hover { text-decoration: underline; }
+@media (max-height: 800px) and (min-width: 48.01rem) {
+  .movie-trailer { width: min(55rem, calc(100vw - 2rem)); }
+  .movie-trailer__details { padding: 1rem 1.5rem; }
+}
+@media (max-width: 48rem) {
+  .movie-hero__inner { grid-template-columns: minmax(0, 1fr) minmax(13rem, .7fr); gap: 1.5rem; min-height: 0; }
+  .movie-hero__media { min-height: 16rem; }
+  .movie-showtimes__room { grid-template-columns: 1fr; gap: .75rem; }
+  .movie-detail-related__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .movie-detail-facts dl { grid-template-columns: 1fr; }
+  .movie-detail-main { padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
+}
+@media (max-width: 36rem) {
+  .movie-hero__inner { display: flex; flex-direction: column; align-items: flex-start; padding-block: 1.5rem 2rem; }
+  .movie-hero__backdrop { object-position: 58% center; }
+  .movie-hero__blur { inset: 0; backdrop-filter: blur(12px); mask-image: linear-gradient(180deg, #000 0%, #000 48%, transparent 88%); }
+  .movie-hero__scrim { background: linear-gradient(180deg, rgb(0 0 0 / 86%) 0%, rgb(0 0 0 / 72%) 52%, rgb(0 0 0 / 35%) 100%); }
+  .movie-detail-breadcrumb { margin-bottom: 1.5rem; }
+  .movie-hero h1 { font-size: 1.875rem; line-height: 1.2; }
+  .movie-hero__actions { width: 100%; }
+  .movie-hero__actions a { flex: 1 1 100%; }
+  .movie-hero__details--with-poster { grid-template-columns: 5.5rem minmax(0, 1fr); gap: .75rem; }
+  .movie-hero__poster { width: 5.5rem; }
+  .movie-hero__facts { gap: .75rem 1rem; }
+  .movie-hero__facts > div { min-width: 6rem; }
+  .movie-hero__media { width: 100%; min-height: 10rem; }
+  .movie-hero__play { width: 4.75rem; height: 4.75rem; }
+  .movie-hero__play svg { width: 2.25rem; height: 2.25rem; }
+  .movie-trailer__details { padding: 1rem; }
+  .movie-trailer__details--with-poster { grid-template-columns: 4.5rem minmax(0, 1fr); gap: .75rem; }
+  .movie-trailer__poster { width: 4.5rem; }
+  .movie-trailer__copy h3 { font-size: 1rem; }
+  .movie-showtimes, .movie-detail-related, .movie-detail-facts { padding-block: 2rem; }
+  .movie-showtimes__date { min-width: 5.75rem; flex-basis: 5.75rem; }
+  .movie-showtimes__summary { align-items: start; flex-direction: column; gap: .25rem; }
+  .movie-showtimes__slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .movie-showtimes__slot { min-width: 0; }
+  .movie-detail-facts dl > div { grid-template-columns: minmax(6rem, .4fr) minmax(0, 1fr); }
+  .movie-detail-loading { grid-template-columns: 7rem minmax(0, 1fr); gap: 1rem; }
+  .movie-detail-loading__copy { gap: .75rem; }
+  .movie-detail-skeleton--title { height: 2rem; }
+}
+@media (prefers-reduced-motion: reduce) { .movie-detail-page * { scroll-behavior: auto !important; transition-duration: 0ms !important; } }

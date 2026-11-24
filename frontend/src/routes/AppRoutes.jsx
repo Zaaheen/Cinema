@@ -45,6 +45,7 @@ export function AppRoutes() {
         </Route>
         <Route element={<ProtectedRoute roles={['MEMBER']} />}>
           <Route path="account" element={<AccountPage />} />
+          <Route path="account/profile" element={<Navigate to="/account" replace />} />
           <Route path="member" element={<MemberDashboardPage />} />
         </Route>
         <Route element={<ProtectedRoute roles={['EMPLOYEE']} />}>

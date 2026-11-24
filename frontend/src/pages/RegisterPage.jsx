@@ -1,94 +1,15 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
+import { CinemaFooter, CinemaHeader } from '../components/CinemaSiteChrome'
 import { getErrorMessage } from '../lib/errors'
 import { roleHome } from '../lib/roles'
 
 export function RegisterPage() {
-  const { register: registerAccount } = useAuth()
-  const navigate = useNavigate()
-  const [fullName, setFullName] = useState('')
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [email, setEmail] = useState('')
-  const [error, setError] = useState(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-    setError(null)
-    setIsSubmitting(true)
-    try {
-      const result = await registerAccount({
-        fullName: fullName.trim(),
-        username: username.trim(),
-        password,
-        email: email.trim() || undefined,
-      })
-      navigate(roleHome(result.user.role), { replace: true })
-    } catch (submitError) {
-      setError(getErrorMessage(submitError))
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  return (
-    <section className="form-card">
-      <h1>Tạo tài khoản</h1>
-      <p className="muted">Đăng ký thành viên để tích điểm và đặt vé.</p>
-
-      <form onSubmit={handleSubmit}>
-        <label>
-          Họ và tên
-          <input
-            autoComplete="name"
-            value={fullName}
-            onChange={(event) => setFullName(event.target.value)}
-            required
-          />
-        </label>
-        <label>
-          Tên đăng nhập
-          <input
-            autoComplete="username"
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
-            minLength={3}
-            required
-          />
-        </label>
-        <label>
-          Mật khẩu
-          <input
-            type="password"
-            autoComplete="new-password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            minLength={8}
-            required
-          />
-        </label>
-        <label>
-          Email (không bắt buộc)
-          <input
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-        </label>
-
-        {error ? <p className="form-error">{error}</p> : null}
-
-        <button type="submit" className="button" disabled={isSubmitting}>
-          {isSubmitting ? 'Đang tạo tài khoản...' : 'Đăng ký'}
-        </button>
-      </form>
-
-      <p className="muted">
-        Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
-      </p>
-    </section>
-  )
+  const { register: registerAccount } = useAuth(); const navigate = useNavigate()
+  const [form, setForm] = useState({ fullName: '', username: '', password: '', email: '' }); const [error, setError] = useState(''); const [isSubmitting, setIsSubmitting] = useState(false)
+  const update = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }))
+  const handleSubmit = async (event) => { event.preventDefault(); if (isSubmitting) return; setError(''); setIsSubmitting(true); try { const result = await registerAccount({ fullName: form.fullName.trim(), username: form.username.trim(), password: form.password, email: form.email.trim() || undefined }); navigate(roleHome(result.user.role), { replace: true }) } catch (submitError) { setError(getErrorMessage(submitError)) } finally { setIsSubmitting(false) } }
+  return <div className="min-h-screen bg-surface font-body-md text-body-md text-on-surface"><CinemaHeader /><main className="mx-auto grid min-h-screen max-w-6xl items-center gap-8 px-4 pb-20 pt-28 sm:px-6 lg:grid-cols-[1fr,1.1fr] lg:px-8"><section className="hidden rounded-2xl border border-surface-container-highest bg-surface-container-low p-8 lg:block"><p className="font-label-sm uppercase tracking-[.16em] text-primary">Cinema membership</p><p className="mt-3 font-display-lg text-5xl font-extrabold leading-tight">Mỗi bộ phim, một trải nghiệm đáng nhớ.</p><p className="mt-5 max-w-md text-body-lg text-on-surface-variant">Tạo tài khoản để quản lý hồ sơ thành viên và sẵn sàng cho những tiện ích Cinema sắp ra mắt.</p><div className="mt-10 grid gap-3 text-on-surface-variant"><p className="rounded-xl bg-surface-container p-4">✦ Trải nghiệm rạp chiếu trong một tài khoản</p><p className="rounded-xl bg-surface-container p-4">✦ Phiên đăng nhập được bảo vệ an toàn</p></div></section><section className="mx-auto w-full max-w-md rounded-2xl border border-surface-container-highest bg-surface-container-low p-6 shadow-2xl sm:p-8"><p className="font-label-sm uppercase tracking-[.14em] text-primary">Tài khoản Cinema</p><h1 className="mt-2 font-headline-lg text-3xl font-bold">Tạo tài khoản</h1><p className="mt-2 text-on-surface-variant">Đăng ký thành viên để bắt đầu hành trình điện ảnh của bạn.</p><form className="mt-7 space-y-4" onSubmit={handleSubmit}><Field id="register-name" label="Họ và tên" autoComplete="name" value={form.fullName} onChange={update('fullName')} maxLength="100" required /><Field id="register-username" label="Tên đăng nhập" autoComplete="username" value={form.username} onChange={update('username')} minLength="3" maxLength="50" hint="Từ 3 đến 50 ký tự." required /><Field id="register-password" label="Mật khẩu" type="password" autoComplete="new-password" value={form.password} onChange={update('password')} minLength="8" maxLength="72" hint="Tối thiểu 8 ký tự." required /><Field id="register-email" label="Email (không bắt buộc)" type="email" autoComplete="email" value={form.email} onChange={update('email')} maxLength="255" />{error ? <p className="rounded-lg border border-error/50 bg-error-container/30 p-3 text-sm text-error" role="alert">{error}</p> : null}<button type="submit" className="flex min-h-12 w-full items-center justify-center rounded-lg bg-primary-container px-4 py-3 font-label-lg font-bold text-on-primary shadow-[0_0_20px_rgba(255,69,162,.35)] disabled:cursor-wait disabled:opacity-70" disabled={isSubmitting}>{isSubmitting ? 'Đang tạo tài khoản...' : 'Đăng ký'}</button></form><p className="mt-6 text-center text-on-surface-variant">Đã có tài khoản? <Link className="font-semibold text-primary hover:underline" to="/login">Đăng nhập</Link></p></section></main><CinemaFooter /></div>
 }
+function Field({ id, label, hint, type = 'text', ...props }) { return <div><label className="mb-1.5 block font-label-md font-medium" htmlFor={id}>{label}</label><input id={id} type={type} aria-describedby={hint ? `${id}-hint` : undefined} className="w-full rounded-lg border border-surface-container-highest bg-surface-container-lowest px-4 py-3 text-[16px] text-on-surface outline-none transition focus:border-primary-container focus:ring-1 focus:ring-primary-container" {...props} />{hint ? <p id={`${id}-hint`} className="mt-1 text-xs text-on-surface-variant">{hint}</p> : null}</div> }
