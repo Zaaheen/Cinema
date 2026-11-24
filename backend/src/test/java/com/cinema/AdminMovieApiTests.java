@@ -137,10 +137,11 @@ class AdminMovieApiTests {
     }
 
     @Test
-    void patchRejectsExplicitNullUnsupportedFieldsAndProtectedFieldChanges() throws Exception {
+    void patchRejectsExplicitNullUnsupportedFieldsAndInvalidStatus() throws Exception {
         Movie movie = canonicalMovie();
         String admin = bearer("ADMIN");
-        for (String body : List.of("{\"title\":null}", "{\"status\":\"STOPPED\"}",
+        for (String body : List.of("{\"title\":null}", "{\"status\":null}",
+                "{\"status\":\"INVALID\"}", "{\"status\":\"now_showing\"}", "{\"status\":3}",
                 "{\"sourceKey\":\"x\"}", "{\"trailerUrl\":\"https://example.test/trailer\"}")) {
             mockMvc.perform(patch("/api/v1/admin/movies/{id}", movie.getId()).header("Authorization", admin)
                             .contentType(MediaType.APPLICATION_JSON).content(body))
@@ -149,6 +150,57 @@ class AdminMovieApiTests {
         mockMvc.perform(patch("/api/v1/admin/movies/{id}", movie.getId()).header("Authorization", admin)
                         .contentType(MediaType.APPLICATION_JSON).content("{\"genreIds\":[1]}"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void adminCanSwitchMovieBetweenUpcomingShowingAndStopped() throws Exception {
+        Movie movie = canonicalMovie();
+        Room room = new Room(); room.setName("Status Room"); room.setStatus("ACTIVE");
+        room = roomRepository.saveAndFlush(room);
+        Showtime showtime = new Showtime(); showtime.setMovie(movie); showtime.setRoom(room);
+        showtime.setStartsAt(Instant.now().plusSeconds(7200));
+        showtime.setEndsAt(Instant.now().plusSeconds(13200)); showtime.setStatus("SCHEDULED");
+        showtime = showtimeRepository.saveAndFlush(showtime);
+        String admin = bearer("ADMIN");
+        for (String next : List.of("COMING_SOON", "NOW_SHOWING", "COMING_SOON", "STOPPED")) {
+            mockMvc.perform(patch("/api/v1/admin/movies/{id}", movie.getId()).header("Authorization", admin)
+                            .contentType(MediaType.APPLICATION_JSON).content("{\"status\":\"" + next + "\"}"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.status").value(next));
+            assertEquals(next, movieRepository.findById(movie.getId()).orElseThrow().getStatus());
+            if ("NOW_SHOWING".equals(next)) {
+                mockMvc.perform(get("/api/v1/home"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.data.nowShowing[0].id").value(movie.getId()));
+            } else if ("COMING_SOON".equals(next)) {
+                mockMvc.perform(get("/api/v1/home"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.data.comingSoon[0].id").value(movie.getId()));
+            }
+        }
+        mockMvc.perform(get("/api/v1/home"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.nowShowing").isEmpty())
+                .andExpect(jsonPath("$.data.comingSoon").isEmpty());
+        assertEquals("SCHEDULED", showtimeRepository.findById(showtime.getId()).orElseThrow().getStatus());
+        mockMvc.perform(get("/api/v1/showtimes/{id}/seat-map", showtime.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.salesOpen").value(false));
+    }
+
+    @Test
+    void movieStatusUpdateRequiresAdmin() throws Exception {
+        Movie movie = canonicalMovie();
+        String endpoint = "/api/v1/admin/movies/{id}";
+        String body = "{\"status\":\"NOW_SHOWING\"}";
+        mockMvc.perform(patch(endpoint, movie.getId()).contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isUnauthorized());
+        for (String role : List.of("MEMBER", "EMPLOYEE")) {
+            mockMvc.perform(patch(endpoint, movie.getId()).header("Authorization", bearer(role))
+                            .contentType(MediaType.APPLICATION_JSON).content(body))
+                    .andExpect(status().isForbidden());
+        }
+        assertEquals("STOPPED", movieRepository.findById(movie.getId()).orElseThrow().getStatus());
     }
 
     @Test

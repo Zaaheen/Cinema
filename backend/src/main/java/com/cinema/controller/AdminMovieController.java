@@ -2,6 +2,7 @@ package com.cinema.controller;
 
 import com.cinema.common.ApiResponse;
 import com.cinema.dto.admin.movie.AdminMoviePatchRequest;
+import com.cinema.dto.admin.movie.AdminMovieBannerResponse;
 import com.cinema.dto.admin.movie.AdminMoviePosterResponse;
 import com.cinema.dto.admin.movie.AdminMovieRequest;
 import com.cinema.dto.admin.movie.AdminMovieResponse;
@@ -64,11 +65,19 @@ public class AdminMovieController {
     }
 
     @PostMapping(value = "/{movieId}/poster", consumes = "multipart/form-data")
-    @Operation(summary = "Tải poster PNG lên Cloudinary và cập nhật phim")
+    @Operation(summary = "Tải poster PNG, JPG/JPEG hoặc WebP lên Cloudinary và cập nhật phim")
     public ResponseEntity<ApiResponse<AdminMoviePosterResponse>> uploadPoster(
             @PathVariable Long movieId, @RequestPart("file") MultipartFile file) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Cập nhật poster thành công",
                 adminMovieService.uploadPoster(movieId, file)));
+    }
+
+    @PostMapping(value = "/{movieId}/banner", consumes = "multipart/form-data")
+    @Operation(summary = "Tải banner PNG, JPG/JPEG hoặc WebP của phim lên Cloudinary")
+    public ResponseEntity<ApiResponse<AdminMovieBannerResponse>> uploadBanner(
+            @PathVariable Long movieId, @RequestPart("file") MultipartFile file) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Cập nhật banner thành công",
+                adminMovieService.uploadBanner(movieId, file)));
     }
 
     @PatchMapping(value = "/{movieId}/trailer", consumes = "application/json")

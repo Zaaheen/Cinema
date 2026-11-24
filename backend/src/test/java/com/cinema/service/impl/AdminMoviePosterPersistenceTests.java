@@ -30,7 +30,7 @@ class AdminMoviePosterPersistenceTests {
         Movie movie = new Movie(); movie.setId(11L); movie.setTitle("Movie"); movie.setDurationMinutes(100);
         movie.setVersion("2D"); movie.setStatus("COMING_SOON");
         when(movies.existsById(11L)).thenReturn(true);
-        when(cloudinary.uploadPng(any())).thenReturn("https://res.cloudinary.com/demo/image/upload/poster.png");
+        when(cloudinary.uploadPosterImage(any())).thenReturn("https://res.cloudinary.com/demo/image/upload/poster.png");
         when(movies.findByIdForUpdate(11L)).thenReturn(Optional.of(movie));
         when(movies.saveAndFlush(any(Movie.class))).thenThrow(new DataIntegrityViolationException("test persistence failure"));
         AdminMovieServiceImpl service = new AdminMovieServiceImpl(movies, mock(GenreRepository.class),
@@ -39,7 +39,7 @@ class AdminMoviePosterPersistenceTests {
 
         assertThrows(DataIntegrityViolationException.class, () -> service.uploadPoster(11L,
                 new MockMultipartFile("file", "poster.png", "image/png", new byte[] {1})));
-        verify(cloudinary).uploadPng(any());
+        verify(cloudinary).uploadPosterImage(any());
     }
 
     private static class NoopTransactionManager implements PlatformTransactionManager {

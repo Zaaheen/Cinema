@@ -1,6 +1,7 @@
 package com.cinema.service.impl;
 
 import com.cinema.dto.admin.movie.AdminMoviePatchRequest;
+import com.cinema.dto.admin.movie.AdminMovieBannerResponse;
 import com.cinema.dto.admin.movie.AdminMoviePosterResponse;
 import com.cinema.dto.admin.movie.AdminMovieRequest;
 import com.cinema.dto.admin.movie.AdminMovieResponse;
@@ -141,6 +142,10 @@ public class AdminMovieServiceImpl implements AdminMovieService {
         applyIfPresent(request.posterUrl(), value -> movie.setPosterUrl(validHttpsUrl(value, "posterUrl")));
         applyIfPresent(request.backdropUrl(), value -> movie.setBackdropUrl(validHttpsUrl(value, "backdropUrl")));
         applyIfPresent(request.ageRating(), value -> movie.setAgeRating(boundedText(value, "ageRating", 10)));
+        if (request.status() != null) {
+            if (!MOVIE_STATUSES.contains(request.status())) throw BusinessException.badRequest("status không hợp lệ");
+            movie.setStatus(request.status());
+        }
         return AdminMovieResponse.from(movieRepository.saveAndFlush(movie));
     }
 
@@ -149,13 +154,28 @@ public class AdminMovieServiceImpl implements AdminMovieService {
         if (!movieRepository.existsById(movieId)) {
             throw BusinessException.notFound("Không tìm thấy phim");
         }
-        String posterUrl = cloudinaryPosterService.uploadPng(file);
+        String posterUrl = cloudinaryPosterService.uploadPosterImage(file);
         return transactionTemplate.execute(status -> {
             Movie movie = movieRepository.findByIdForUpdate(movieId)
                     .orElseThrow(() -> BusinessException.notFound("Không tìm thấy phim"));
             movie.setPosterUrl(posterUrl);
             Movie saved = movieRepository.saveAndFlush(movie);
             return new AdminMoviePosterResponse(saved.getId(), saved.getPosterUrl());
+        });
+    }
+
+    @Override
+    public AdminMovieBannerResponse uploadBanner(Long movieId, MultipartFile file) {
+        if (!movieRepository.existsById(movieId)) {
+            throw BusinessException.notFound("Không tìm thấy phim");
+        }
+        String backdropUrl = cloudinaryPosterService.uploadBannerImage(file);
+        return transactionTemplate.execute(status -> {
+            Movie movie = movieRepository.findByIdForUpdate(movieId)
+                    .orElseThrow(() -> BusinessException.notFound("Không tìm thấy phim"));
+            movie.setBackdropUrl(backdropUrl);
+            Movie saved = movieRepository.saveAndFlush(movie);
+            return new AdminMovieBannerResponse(saved.getId(), saved.getBackdropUrl());
         });
     }
 

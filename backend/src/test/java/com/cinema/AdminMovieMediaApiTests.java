@@ -61,7 +61,7 @@ class AdminMovieMediaApiTests {
     @Test
     void adminUploadsPosterAndOnlyReceivesSafeMovieResponse() throws Exception {
         Movie movie = movie();
-        when(cloudinaryPosterService.uploadPng(any())).thenReturn("https://res.cloudinary.com/demo/image/upload/poster.png");
+        when(cloudinaryPosterService.uploadPosterImage(any())).thenReturn("https://res.cloudinary.com/demo/image/upload/poster.png");
         MockMultipartFile file = new MockMultipartFile("file", "poster.png", "image/png", new byte[] {1});
 
         mockMvc.perform(multipart("/api/v1/admin/movies/{id}/poster", movie.getId()).file(file)
@@ -85,6 +85,40 @@ class AdminMovieMediaApiTests {
                     .andExpect(status().isForbidden());
         }
         mockMvc.perform(multipart("/api/v1/admin/movies/{id}/poster", 999999L).file(file)
+                        .header("Authorization", bearer("ADMIN")))
+                .andExpect(status().isNotFound());
+        verifyNoInteractions(cloudinaryPosterService);
+    }
+
+    @Test
+    void adminUploadsMovieBannerAndHomeReturnsBackdrop() throws Exception {
+        Movie movie = movie();
+        String bannerUrl = "https://res.cloudinary.com/demo/image/upload/banner.png";
+        when(cloudinaryPosterService.uploadBannerImage(any())).thenReturn(bannerUrl);
+        MockMultipartFile file = new MockMultipartFile("file", "banner.png", "image/png", new byte[] {1});
+
+        mockMvc.perform(multipart("/api/v1/admin/movies/{id}/banner", movie.getId()).file(file)
+                        .header("Authorization", bearer("ADMIN")))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.movieId").value(movie.getId()))
+                .andExpect(jsonPath("$.data.backdropUrl").value(bannerUrl));
+        assertEquals(bannerUrl, movieRepository.findById(movie.getId()).orElseThrow().getBackdropUrl());
+        mockMvc.perform(get("/api/v1/home"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.comingSoon[0].backdropUrl").value(bannerUrl));
+    }
+
+    @Test
+    void bannerEndpointRequiresAdminAndExistingMovie() throws Exception {
+        MockMultipartFile file = new MockMultipartFile("file", "banner.png", "image/png", new byte[] {1});
+        mockMvc.perform(multipart("/api/v1/admin/movies/{id}/banner", 999999L).file(file))
+                .andExpect(status().isUnauthorized());
+        for (String role : new String[] {"MEMBER", "EMPLOYEE"}) {
+            mockMvc.perform(multipart("/api/v1/admin/movies/{id}/banner", 999999L).file(file)
+                            .header("Authorization", bearer(role)))
+                    .andExpect(status().isForbidden());
+        }
+        mockMvc.perform(multipart("/api/v1/admin/movies/{id}/banner", 999999L).file(file)
                         .header("Authorization", bearer("ADMIN")))
                 .andExpect(status().isNotFound());
         verifyNoInteractions(cloudinaryPosterService);

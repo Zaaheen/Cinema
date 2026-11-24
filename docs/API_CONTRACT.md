@@ -91,7 +91,8 @@ Backend phải tự xác thực giá, khuyến mãi, điểm và tình trạng g
 |---|---|---|---|
 | GET/POST | `/admin/movies` | ADMIN | Danh sách/tạo phim |
 | GET/PATCH | `/admin/movies/{id}` | ADMIN | Xem/sửa phim |
-| POST | `/admin/movies/{id}/poster` | ADMIN | Upload poster PNG đã kiểm tra |
+| POST | `/admin/movies/{id}/poster` | ADMIN | Upload poster PNG, JPG/JPEG hoặc WebP (tối đa 5 MiB) |
+| POST | `/admin/movies/{id}/banner` | ADMIN | Upload banner ngang PNG, JPG/JPEG hoặc WebP vào `movies.backdrop_url` |
 | PATCH | `/admin/movies/{id}/trailer` | ADMIN | Cập nhật/xóa URL YouTube hợp lệ |
 | GET | `/admin/genres` | ADMIN | Danh sách genre canonical selectable |
 | GET | `/admin/rooms` | ADMIN | Danh sách phòng chiếu thật, gồm `id`, `name`, `status` (kể cả phòng không ACTIVE), sắp theo `name,id`; không tạo hoặc sửa dữ liệu |
@@ -108,6 +109,10 @@ Backend phải tự xác thực giá, khuyến mãi, điểm và tình trạng g
 | GET | `/admin/reports/tickets?from=&to=` | TBD | Chưa xác nhận contract báo cáo |
 
 **Admin Room List — IMPLEMENTED:** `GET /api/v1/admin/rooms` trả `ApiResponse<List<AdminRoomResponse>>`, mỗi mục có `id`, `name`, `status`. Danh sách rỗng trả `200` với `data: []`. Chỉ ADMIN được truy cập; anonymous trả `401`, MEMBER/EMPLOYEE trả `403`. Client chỉ cho chọn phòng `ACTIVE` khi tạo/sửa lịch chiếu; backend vẫn xác thực trạng thái phòng khi ghi.
+
+**Ảnh poster/banner phim — IMPLEMENTED:** `POST /api/v1/admin/movies/{id}/poster` và `/banner` nhận `multipart/form-data` với một phần `file`. Chỉ ADMIN; anonymous `401`, role khác `403`, phim không tồn tại `404`. Chấp nhận PNG, JPG/JPEG hoặc WebP với tên và MIME khớp định dạng, kiểm tra chữ ký và cấu trúc ảnh, tối đa 5 MiB, kích thước tối đa 4096 × 4096 và 12 triệu pixel; banner phải là ảnh ngang có tỉ lệ rộng:cao tối thiểu 7:5. PNG/JPEG được giải mã tại backend; WebP được kiểm tra container, frame và kích thước rồi dịch vụ lưu trữ kiểm tra khả năng giải mã. Sai dữ liệu trả `400`. Cloudinary chưa cấu hình trả `503`, lỗi lưu trữ trả `502`. Thành công trả `201` và `ApiResponse<{movieId, posterUrl}>` hoặc `ApiResponse<{movieId, backdropUrl}>`. Banner được lưu ở `movies.backdrop_url`, thay thế banner cũ của phim; `GET /home` trả `backdropUrl` trong phim đang/sắp chiếu. Không thêm hàng vào bảng `banners`; bảng đó dành cho banner nội dung độc lập.
+
+**Trạng thái phim — IMPLEMENTED:** `PATCH /api/v1/admin/movies/{id}` cho phép ADMIN gửi `{"status":"COMING_SOON"}`, `{"status":"NOW_SHOWING"}` hoặc `{"status":"STOPPED"}`; có thể chuyển giữa ba trạng thái theo cả hai chiều. Trường bị bỏ qua giữ nguyên giá trị cũ; `null`, kiểu khác chuỗi hoặc trạng thái khác ba giá trị trên trả `400`. Phim không tồn tại trả `404`; anonymous `401`, MEMBER/EMPLOYEE `403`. Thành công trả `200` với `AdminMovieResponse.status` mới. `STOPPED` loại phim khỏi danh sách phim công khai và các nhóm phim trang chủ, đồng thời làm suất chiếu không mở bán trong sơ đồ ghế. Cập nhật trạng thái phim không đổi trạng thái của suất chiếu đã tạo; nếu cần hủy suất, quản trị viên dùng thao tác hủy suất riêng. API chi tiết phim theo ID hiện vẫn trả phim `STOPPED` nếu ID tồn tại (hành vi hiện có).
 
 **Admin Seat Price PATCH — IMPLEMENTED:** `PATCH /api/v1/admin/seat-prices/{id}` chỉ cho cập nhật quy tắc `origin=ADMIN_APPROVED` với `rowVersion` hợp lệ. ID không tồn tại hoặc thuộc `LEGACY_UNREVIEWED`/`LOCAL_FIXTURE` trả `404`; version cũ trả `409 PRICE_RULE_CHANGED`. Legacy/fixture không được kích hoạt hay chuyển nguồn gốc qua API này. Quy tắc ACTIVE được revise bằng successor và audit hiện có.
 

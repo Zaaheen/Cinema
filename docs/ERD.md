@@ -10,7 +10,7 @@
 | `roles` | `id`, `code`, `name` | Vai trò: khách thành viên, nhân viên, quản lý/Admin; cách mô hình khách chưa đăng nhập cần thiết kế riêng |
 | `members` | `id`, `user_id`, `member_code`, `birth_date`, `gender`, `address`, `identity_number` | Hồ sơ thành viên và thông tin tài khoản theo SRS |
 | `point_transactions` | `id`, `member_id`, `booking_id` nullable, `type`, `points_delta`, `description`, `created_at` | Sổ giao dịch cộng/sử dụng điểm; không chỉ lưu mỗi tổng điểm |
-| `movies` | `id`, `title`, `genre`, `release_date`, `duration_minutes`, `version`, `cast_text`, `director`, `studio`, `synopsis`, `trailer_url`, `poster_url`, `status` | Danh mục phim và chi tiết phim |
+| `movies` | `id`, `title`, `genre`, `release_date`, `duration_minutes`, `version`, `cast_text`, `director`, `studio`, `synopsis`, `trailer_url`, `poster_url`, `backdrop_url`, `status` | Danh mục phim, chi tiết và ảnh banner trang chủ |
 | `rooms` | `id`, `name`, `status` | Phòng chiếu |
 | `seats` | `id`, `room_id`, `row_label`, `seat_number`, `seat_type`, `status` | Sơ đồ ghế; unique `(room_id, row_label, seat_number)` |
 | `showtimes` | `id`, `movie_id`, `room_id`, `starts_at`, `ends_at`, `status` | Suất chiếu cụ thể của phim tại phòng |

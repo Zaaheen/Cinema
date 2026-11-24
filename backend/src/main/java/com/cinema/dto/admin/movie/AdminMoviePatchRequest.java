@@ -12,11 +12,11 @@ import tools.jackson.databind.JsonNode;
 public record AdminMoviePatchRequest(
         String title, Long primaryGenreId, List<Long> genreIds, LocalDate releaseDate, Integer durationMinutes,
         String version, String castText, String director, String studio, String synopsis, String posterUrl,
-        String backdropUrl, String ageRating) {
+        String backdropUrl, String ageRating, String status) {
 
     private static final Set<String> ALLOWED = Set.of("title", "primaryGenreId", "genreIds", "releaseDate",
             "durationMinutes", "version", "castText", "director", "studio", "synopsis", "posterUrl",
-            "backdropUrl", "ageRating");
+            "backdropUrl", "ageRating", "status");
 
     public static AdminMoviePatchRequest from(JsonNode body) {
         if (body == null || !body.isObject()) throw BusinessException.badRequest("Nội dung yêu cầu không hợp lệ");
@@ -27,7 +27,7 @@ public record AdminMoviePatchRequest(
         return new AdminMoviePatchRequest(text(body, "title"), longValue(body, "primaryGenreId"),
                 genreIds(body), date(body, "releaseDate"), integer(body, "durationMinutes"), text(body, "version"),
                 text(body, "castText"), text(body, "director"), text(body, "studio"), text(body, "synopsis"),
-                text(body, "posterUrl"), text(body, "backdropUrl"), text(body, "ageRating"));
+                text(body, "posterUrl"), text(body, "backdropUrl"), text(body, "ageRating"), text(body, "status"));
     }
 
     private static String text(JsonNode body, String field) {

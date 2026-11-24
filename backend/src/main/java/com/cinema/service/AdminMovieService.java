@@ -1,6 +1,7 @@
 package com.cinema.service;
 
 import com.cinema.dto.admin.movie.AdminMoviePatchRequest;
+import com.cinema.dto.admin.movie.AdminMovieBannerResponse;
 import com.cinema.dto.admin.movie.AdminMoviePosterResponse;
 import com.cinema.dto.admin.movie.AdminMovieRequest;
 import com.cinema.dto.admin.movie.AdminMovieResponse;
@@ -17,5 +18,6 @@ public interface AdminMovieService {
     AdminMovieResponse create(AdminMovieRequest request);
     AdminMovieResponse update(Long movieId, AdminMoviePatchRequest request);
     AdminMoviePosterResponse uploadPoster(Long movieId, MultipartFile file);
+    AdminMovieBannerResponse uploadBanner(Long movieId, MultipartFile file);
     AdminMovieResponse updateTrailer(Long movieId, AdminMovieTrailerPatchRequest request);
 }
