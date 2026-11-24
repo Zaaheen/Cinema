@@ -16,6 +16,11 @@ export function trailerWatchUrl(videoId) {
   return VIDEO_ID.test(videoId) ? `https://www.youtube.com/watch?v=${videoId}` : null
 }
 
+export function trailerThumbnailUrl(videoId, quality = 'maxresdefault') {
+  if (!VIDEO_ID.test(videoId) || !['maxresdefault', 'hqdefault'].includes(quality)) return null
+  return `https://i.ytimg.com/vi/${videoId}/${quality}.jpg`
+}
+
 export function trailerEmbedUrl(videoId, origin) {
   if (!VIDEO_ID.test(videoId)) return null
   return `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&origin=${encodeURIComponent(origin)}`

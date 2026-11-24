@@ -4,6 +4,7 @@ import {
   loadYouTubeIframeApi,
   trailerEmbedErrorMessage,
   trailerEmbedUrl,
+  trailerThumbnailUrl,
   trailerVideoId,
   trailerWatchUrl,
 } from './trailerPlayer.js'
@@ -24,8 +25,11 @@ test('player and external fallback use only the validated video ID', () => {
   assert.equal(trailerEmbedUrl(id, 'http://127.0.0.1:15174'),
     'https://www.youtube-nocookie.com/embed/-2bFE8Jjm9A?enablejsapi=1&origin=http%3A%2F%2F127.0.0.1%3A15174')
   assert.equal(trailerWatchUrl(id), 'https://www.youtube.com/watch?v=-2bFE8Jjm9A')
+  assert.equal(trailerThumbnailUrl(id), 'https://i.ytimg.com/vi/-2bFE8Jjm9A/maxresdefault.jpg')
+  assert.equal(trailerThumbnailUrl(id, 'hqdefault'), 'https://i.ytimg.com/vi/-2bFE8Jjm9A/hqdefault.jpg')
   assert.equal(trailerEmbedUrl('invalid/id', 'http://127.0.0.1:15174'), null)
   assert.equal(trailerWatchUrl('invalid/id'), null)
+  assert.equal(trailerThumbnailUrl('invalid/id'), null)
 })
 
 test('player errors explain embed restrictions and missing referrer', () => {
