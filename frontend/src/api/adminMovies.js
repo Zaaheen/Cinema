@@ -32,6 +32,13 @@ export async function uploadAdminMoviePoster(movieId, file) {
   return data.data
 }
 
+export async function uploadAdminMovieBanner(movieId, file) {
+  const body = new FormData()
+  body.append('file', file)
+  const { data } = await apiClient.post(`/admin/movies/${movieId}/banner`, body)
+  return data.data
+}
+
 export async function updateAdminMovieTrailer(movieId, trailerUrl) {
   const { data } = await apiClient.patch(`/admin/movies/${movieId}/trailer`, { trailerUrl })
   return data.data

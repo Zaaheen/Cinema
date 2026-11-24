@@ -7,7 +7,7 @@ const STATUS_OPTIONS = [
   { value: '', label: 'Tất cả' },
   { value: 'COMING_SOON', label: 'Sắp chiếu' },
   { value: 'NOW_SHOWING', label: 'Đang chiếu' },
-  { value: 'STOPPED', label: 'Ngừng chiếu' },
+  { value: 'STOPPED', label: 'Dừng chiếu' },
 ]
 
 const dateFormatter = new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium' })
@@ -91,7 +91,7 @@ export function AdminMovieListPage() {
       <div>
         <p className="eyebrow">DANH MỤC PHIM</p>
         <h2 id="admin-movie-title">Quản lý phim</h2>
-        <p>Danh sách phim hiển thị trực tiếp từ hệ thống quản trị, bao gồm cả phim đã ngừng chiếu.</p>
+        <p>Danh sách phim hiển thị trực tiếp từ hệ thống quản trị, bao gồm cả phim đã dừng chiếu.</p>
       </div>
       <Link className="admin-movies__create price-admin__primary" to="/admin/movies/new">Thêm phim</Link>
     </header>

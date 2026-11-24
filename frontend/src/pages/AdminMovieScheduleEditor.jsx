@@ -4,7 +4,7 @@ import { cancelAdminShowtime, createAdminShowtime, getAdminRooms, getAdminShowti
 import { cinemaDate, cinemaTime, isValidSlot, showtimeError, startsAtWithOffset } from '../lib/showtimeSchedule'
 import { getErrorMessage } from '../lib/errors'
 
-export function AdminMovieScheduleEditor({ movieId, movieTitle, durationMinutes, movieStatus, durationHasUnsavedChanges }) {
+export function AdminMovieScheduleEditor({ movieId, movieTitle, durationMinutes, movieStatus, movieHasUnsavedScheduleSettings }) {
   const [date, setDate] = useState(() => cinemaDate())
   const [rooms, setRooms] = useState([])
   const [roomsState, setRoomsState] = useState({ loading: true, error: '' })
@@ -46,7 +46,7 @@ export function AdminMovieScheduleEditor({ movieId, movieTitle, durationMinutes,
   const canSchedule = movieStatus === 'COMING_SOON' || movieStatus === 'NOW_SHOWING'
   const selected = schedule.items.find((item) => item.id === editingId)
   const invalidSlot = Boolean(date && time) && !isValidSlot(date, time, durationMinutes)
-  const disabledReason = durationHasUnsavedChanges ? 'Lưu thay đổi thời lượng phim trước khi chỉnh lịch chiếu.' : !canSchedule ? 'Trạng thái phim hiện không cho phép tạo suất chiếu.' : ''
+  const disabledReason = movieHasUnsavedScheduleSettings ? 'Lưu thay đổi thời lượng hoặc trạng thái phim trước khi chỉnh lịch chiếu.' : !canSchedule ? 'Trạng thái phim hiện không cho phép tạo suất chiếu.' : ''
 
   function resetEdit() {
     setEditingId(null)

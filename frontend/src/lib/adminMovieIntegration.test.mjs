@@ -1,12 +1,24 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { canonicalTrailerUrl, posterFileError, validTrailerUrl } from './adminMovieMedia.js'
+import { bannerFileError, canonicalTrailerUrl, posterFileError, validTrailerUrl } from './adminMovieMedia.js'
 import { isValidSlot, startsAtWithOffset } from './showtimeSchedule.js'
 
-test('poster input follows the backend PNG and 5 MiB boundary', () => {
+test('poster input accepts supported image formats within the 5 MiB boundary', () => {
   assert.equal(posterFileError({ name: 'poster.png', type: 'image/png', size: 1024 }), '')
-  assert.match(posterFileError({ name: 'poster.jpg', type: 'image/jpeg', size: 1024 }), /PNG/)
+  assert.equal(posterFileError({ name: 'poster.jpg', type: 'image/jpeg', size: 1024 }), '')
+  assert.equal(posterFileError({ name: 'poster.jpeg', type: 'image/jpeg', size: 1024 }), '')
+  assert.equal(posterFileError({ name: 'poster.webp', type: 'image/webp', size: 1024 }), '')
+  assert.match(posterFileError({ name: 'poster.png', type: 'image/jpeg', size: 1024 }), /PNG/)
+  assert.match(posterFileError({ name: 'poster.svg', type: 'image/svg+xml', size: 1024 }), /PNG/)
   assert.match(posterFileError({ name: 'poster.png', type: 'image/png', size: 5 * 1024 * 1024 + 1 }), /5 MiB/)
+})
+
+test('banner input accepts the same image formats and size limit', () => {
+  assert.equal(bannerFileError({ name: 'wide.png', type: 'image/png', size: 1024 }), '')
+  assert.equal(bannerFileError({ name: 'wide.jpg', type: 'image/jpeg', size: 1024 }), '')
+  assert.equal(bannerFileError({ name: 'wide.webp', type: 'image/webp', size: 1024 }), '')
+  assert.match(bannerFileError({ name: 'wide.jpg', type: 'image/png', size: 1024 }), /PNG/)
+  assert.match(bannerFileError({ name: 'wide.png', type: 'image/png', size: 5 * 1024 * 1024 + 1 }), /5 MiB/)
 })
 
 test('trailer accepts canonical YouTube links and rejects arbitrary hosts', () => {

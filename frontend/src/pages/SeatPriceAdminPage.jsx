@@ -12,6 +12,7 @@ const formatAuditTime = (value) => value ? new Intl.DateTimeFormat('vi-VN', { da
 export function SeatPriceAdminPage() {
   const dialogRef = useRef(null)
   const deactivateDialogRef = useRef(null)
+  const activateDialogRef = useRef(null)
   const submitInFlight = useRef(false)
   const [rules, setRules] = useState([])
   const [loading, setLoading] = useState(true)
@@ -20,6 +21,7 @@ export function SeatPriceAdminPage() {
   const [form, setForm] = useState(EMPTY_RULE)
   const [editing, setEditing] = useState(null)
   const [ruleToDeactivate, setRuleToDeactivate] = useState(null)
+  const [ruleToActivate, setRuleToActivate] = useState(null)
   const [formErrors, setFormErrors] = useState({})
   const [requestError, setRequestError] = useState('')
 
@@ -74,12 +76,18 @@ export function SeatPriceAdminPage() {
     } finally { submitInFlight.current = false; setSaving(false) }
   }
 
-  async function updateStatus(rule, status) {
+  async function updateStatus(rule, status, confirmed = false) {
     if (submitInFlight.current) return
+    if (status === 'ACTIVE' && !confirmed) {
+      setRuleToActivate(rule)
+      activateDialogRef.current?.showModal()
+      return
+    }
     try {
       submitInFlight.current = true; setSaving(true); setRequestError('')
       await updateSeatPrice(rule.id, { rowVersion: rule.rowVersion, status })
       deactivateDialogRef.current?.close()
+      activateDialogRef.current?.close()
       toast.success(status === 'ACTIVE' ? 'Đã kích hoạt quy tắc giá.' : 'Đã ngừng áp dụng quy tắc giá.')
       await load()
     } catch (error) {
@@ -110,5 +118,6 @@ export function SeatPriceAdminPage() {
       <label htmlFor="rule-seat-type">Loại ghế<select id="rule-seat-type" required name="seatType" value={form.seatType} onChange={(event) => setForm({ ...form, seatType: event.target.value })}><option value="STANDARD">STANDARD</option><option value="VIP">VIP</option></select></label><label htmlFor="rule-movie-version">Phiên bản phim<input id="rule-movie-version" name="movieVersion" value={form.movieVersion} onChange={(event) => setForm({ ...form, movieVersion: event.target.value })} placeholder="Để trống cho giá mặc định" /></label><label htmlFor="rule-amount">Giá vé (VND)<input id="rule-amount" required type="number" min="0.01" step="0.01" inputMode="decimal" name="amount" value={form.amount} aria-invalid={Boolean(formErrors.amount)} aria-describedby={formErrors.amount ? 'rule-amount-error' : undefined} onChange={(event) => setForm({ ...form, amount: event.target.value })} />{formErrors.amount ? <span id="rule-amount-error" className="price-admin__field-error">{formErrors.amount}</span> : null}</label><label htmlFor="rule-valid-from">Ngày bắt đầu<input id="rule-valid-from" required type="date" name="validFrom" value={form.validFrom} aria-invalid={Boolean(formErrors.validFrom)} aria-describedby={formErrors.validFrom ? 'rule-valid-from-error' : undefined} onChange={(event) => setForm({ ...form, validFrom: event.target.value })} />{formErrors.validFrom ? <span id="rule-valid-from-error" className="price-admin__field-error">{formErrors.validFrom}</span> : null}</label><label htmlFor="rule-valid-to">Ngày kết thúc<input id="rule-valid-to" type="date" name="validTo" value={form.validTo} aria-invalid={Boolean(formErrors.validTo)} aria-describedby={formErrors.validTo ? 'rule-valid-to-error' : undefined} onChange={(event) => setForm({ ...form, validTo: event.target.value })} />{formErrors.validTo ? <span id="rule-valid-to-error" className="price-admin__field-error">{formErrors.validTo}</span> : null}</label>
     </div><footer><button type="button" onClick={() => dialogRef.current?.close()} disabled={saving}>Hủy</button><button className="price-admin__primary" type="submit" disabled={saving}>{saving ? 'Đang lưu…' : editing ? 'Tạo revision' : 'Lưu bản nháp'}</button></footer></form></dialog>
     <dialog ref={deactivateDialogRef} className="price-admin__dialog price-admin__dialog--confirm" aria-labelledby="deactivate-title"><section><p className="eyebrow">XÁC NHẬN</p><h3 id="deactivate-title">Ngừng áp dụng quy tắc giá?</h3><p>Rule #{ruleToDeactivate?.id} sẽ không còn được Pricing Service chọn cho các lần giữ ghế sau này. Lịch sử audit vẫn được giữ lại.</p><footer><button type="button" disabled={saving} onClick={() => deactivateDialogRef.current?.close()}>Hủy</button><button className="price-admin__danger" type="button" disabled={saving} onClick={() => updateStatus(ruleToDeactivate, 'INACTIVE')}>{saving ? 'Đang xử lý…' : 'Ngừng áp dụng'}</button></footer></section></dialog>
+    <dialog ref={activateDialogRef} className="price-admin__dialog price-admin__dialog--confirm" aria-labelledby="activate-title"><section><p className="eyebrow">Kiểm tra trước khi áp dụng</p><h3 id="activate-title">Kích hoạt giá vé này?</h3><p>Giá này có thể được dùng cho các lần giữ ghế tiếp theo khi đến ngày hiệu lực.</p><dl className="price-admin__review"><div><dt>Loại ghế</dt><dd>{ruleToActivate?.seatType}</dd></div><div><dt>Phiên bản</dt><dd>{ruleToActivate?.movieVersion || 'Mặc định'}</dd></div><div><dt>Giá vé</dt><dd>{ruleToActivate ? money.format(ruleToActivate.amount) : '—'}</dd></div><div><dt>Hiệu lực</dt><dd>{ruleToActivate?.validFrom} – {ruleToActivate?.validTo || 'Không thời hạn'}</dd></div></dl><footer><button type="button" disabled={saving} onClick={() => activateDialogRef.current?.close()}>Quay lại</button><button className="price-admin__primary" type="button" disabled={saving || !ruleToActivate} onClick={() => updateStatus(ruleToActivate, 'ACTIVE', true)}>{saving ? 'Đang xử lý…' : 'Xác nhận kích hoạt'}</button></footer></section></dialog>
   </section>
 }

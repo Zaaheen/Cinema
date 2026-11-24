@@ -29,9 +29,26 @@ export function validTrailerUrl(value) {
   return canonicalTrailerUrl(value) !== null
 }
 
-export function posterFileError(file) {
-  if (!file) return 'Chọn tệp PNG để tải lên.'
-  if (!file.name?.toLowerCase().endsWith('.png') || file.type !== 'image/png') return 'Poster phải là tệp PNG.'
-  if (file.size === 0 || file.size > 5 * 1024 * 1024) return 'Poster phải có dung lượng từ 1 byte đến 5 MiB.'
+const IMAGE_FORMATS = [
+  { suffixes: ['.png'], mime: 'image/png' },
+  { suffixes: ['.jpg', '.jpeg'], mime: 'image/jpeg' },
+  { suffixes: ['.webp'], mime: 'image/webp' },
+]
+
+function imageFileError(file, label) {
+  if (!file) return `Chọn ảnh ${label} để tải lên.`
+  const name = file.name?.toLowerCase() || ''
+  if (!IMAGE_FORMATS.some(({ suffixes, mime }) => suffixes.some((suffix) => name.endsWith(suffix)) && file.type === mime)) {
+    return `${label} phải là ảnh PNG, JPG/JPEG hoặc WebP.`
+  }
+  if (file.size === 0 || file.size > 5 * 1024 * 1024) return `${label} phải có dung lượng từ 1 byte đến 5 MiB.`
   return ''
+}
+
+export function posterFileError(file) {
+  return imageFileError(file, 'Poster')
+}
+
+export function bannerFileError(file) {
+  return imageFileError(file, 'Banner')
 }

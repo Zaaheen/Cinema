@@ -1,171 +1,89 @@
-
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { toast } from 'react-toastify'
+import { Link } from 'react-router-dom'
 import { getPromotions } from '../api/promotionAdmin'
+import { getErrorMessage } from '../lib/errors'
+import { promotionVisibilityState, selectPromotionPage } from '../lib/adminPromotionList'
+
+const formatDate = (value) => value
+  ? new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium', timeZone: 'Asia/Ho_Chi_Minh' }).format(new Date(value))
+  : '—'
+
+function statusText(state) {
+  return {
+    inactive: 'Ngừng hoạt động',
+    expired: 'Đã hết hạn',
+    upcoming: 'Sắp diễn ra',
+    effective: 'Đang diễn ra',
+  }[state]
+}
+
+function PromotionCard({ promotion }) {
+  const state = promotionVisibilityState(promotion)
+  const discount = promotion.discountType === 'PERCENT'
+    ? `${promotion.discountValue}%`
+    : `${Number(promotion.discountValue).toLocaleString('vi-VN')} ₫`
+
+  return <article className="admin-promotion__item">
+    <div className="admin-promotion__item-top">
+      <span className="admin-promotion__code">KM{String(promotion.id).padStart(4, '0')}</span>
+      <span className={`admin-promotion__status admin-promotion__status--${state}`}>{statusText(state)}</span>
+    </div>
+    <h4>{promotion.title}</h4>
+    <p className="admin-promotion__item-description">{promotion.description || 'Chưa có mô tả'}</p>
+    <div className="admin-promotion__item-facts">
+      <div><span>Giá trị ưu đãi</span><strong>{discount}</strong></div>
+      <div><span>Loại</span><strong>{promotion.discountType === 'PERCENT' ? 'Theo phần trăm' : 'Theo số tiền'}</strong></div>
+      <div><span>Thời gian</span><strong>{formatDate(promotion.startsAt)} – {formatDate(promotion.endsAt)}</strong></div>
+    </div>
+    <div className="admin-promotion__item-actions">
+      <Link to={`/admin/promotions/${promotion.id}`}>Xem chi tiết</Link>
+      <Link className="admin-promotion__item-edit" to={`/admin/promotions/${promotion.id}/edit`}>Chỉnh sửa</Link>
+    </div>
+  </article>
+}
 
 export function PromotionAdminPage() {
-    const [promotions, setPromotions] = useState([])
-    const [loading, setLoading] = useState(false)
+  const [request, setRequest] = useState({ loading: true, error: '', promotions: [] })
+  const [reload, setReload] = useState(0)
+  const [query, setQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [page, setPage] = useState(0)
 
-    const navigate = useNavigate()
+  const retry = () => {
+    setRequest((current) => ({ ...current, loading: true, error: '' }))
+    setReload((current) => current + 1)
+  }
 
-    async function loadPromotions() {
-        try {
-            setLoading(true)
-            const result = await getPromotions()
-            setPromotions(result || [])
-        } catch (error) {
-            toast.error(
-                error.response?.data?.message ||
-                'Không tải được danh sách khuyến mãi!'
-            )
-        } finally {
-            setLoading(false)
-        }
-    }
+  useEffect(() => {
+    let active = true
+    getPromotions()
+      .then((promotions) => { if (active) setRequest({ loading: false, error: '', promotions: promotions || [] }) })
+      .catch((error) => { if (active) setRequest({ loading: false, error: getErrorMessage(error), promotions: [] }) })
+    return () => { active = false }
+  }, [reload])
 
-    useEffect(() => {
-        loadPromotions()
-    }, [])
+  const { loading, error, promotions } = request
+  const pageSize = 6
+  const { filtered, pageCount, currentPage, visiblePromotions } = selectPromotionPage(promotions, { query, status: statusFilter, page, pageSize })
 
-    function handleAdd() {
-        navigate('/admin/promotions/new')
-    }
+  return <section className="admin-promotion" aria-labelledby="promotion-admin-title">
+    <header className="admin-promotion__header">
+      <div>
+        <p className="eyebrow">Khuyến mãi</p>
+        <h2 id="promotion-admin-title">Quản lý khuyến mãi</h2>
+        <p>Theo dõi chương trình, thời gian áp dụng và giá trị ưu đãi.</p>
+      </div>
+      <Link className="admin-promotion__create" to="/admin/promotions/new">Thêm khuyến mãi</Link>
+    </header>
 
-    function handleEdit(id) {
-        navigate(`/admin/promotions/${id}/edit`)
-    }
-
-    function handleDetail(id) {
-        navigate(`/admin/promotions/${id}`)
-    }
-
-    function getPromotionCode(id) {
-        return `KM${String(id).padStart(4, '0')}`
-    }
-
-    function getPromotionType(type) {
-        if (type === 'PERCENT') return 'Giảm theo phần trăm'
-        if (type === 'FIXED') return 'Giảm số tiền'
-        return type || 'Chưa xác định'
-    }
-
-    function getPromotionStatus(item) {
-        const now = new Date()
-        const startDate = new Date(item.startsAt)
-        const endDate = new Date(item.endsAt)
-
-        if (item.status === 'INACTIVE') {
-            return 'Ngừng hoạt động'
-        }
-
-        if (item.status === 'EXPIRED' || now > endDate) {
-            return 'Đã hết hạn'
-        }
-
-        if (now < startDate) {
-            return 'Sắp diễn ra'
-        }
-
-        return 'Đang diễn ra'
-    }
-
-    function formatDate(date) {
-        if (!date) return ''
-
-        return new Date(date).toLocaleDateString('vi-VN')
-    }
-
-    function formatDiscountValue(item) {
-        if (item.discountType === 'PERCENT') {
-            return `${item.discountValue}%`
-        }
-
-        return `${Number(item.discountValue).toLocaleString('vi-VN')} VNĐ`
-    }
-
-    return (
-        <section className="role-dashboard">
-            <p className="eyebrow">QUẢN TRỊ</p>
-
-            <h1>Quản lý khuyến mãi</h1>
-
-            <div className="feature-card">
-                <h2>Danh sách khuyến mãi</h2>
-
-                <button type="button" onClick={handleAdd}>
-                    + Thêm khuyến mãi
-                </button>
-
-                {loading ? (
-                    <p>Đang tải dữ liệu...</p>
-                ) : (
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>Mã khuyến mãi</th>
-                            <th>Tên khuyến mãi</th>
-                            <th>Loại khuyến mãi</th>
-                            <th>Giá trị ưu đãi</th>
-                            <th>Ngày bắt đầu</th>
-                            <th>Ngày kết thúc</th>
-                            <th>Trạng thái</th>
-                            <th>Thao tác</th>
-                        </tr>
-                        </thead>
-
-                        <tbody>
-                        {promotions.map((item, index) => (
-                            <tr key={item.id}>
-                                <td>{index + 1}</td>
-
-                                <td>{getPromotionCode(item.id)}</td>
-
-                                <td>{item.title}</td>
-
-                                <td>
-                                    {getPromotionType(item.discountType)}
-                                </td>
-
-                                <td>{formatDiscountValue(item)}</td>
-
-                                <td>{formatDate(item.startsAt)}</td>
-
-                                <td>{formatDate(item.endsAt)}</td>
-
-                                <td>{getPromotionStatus(item)}</td>
-
-                                <td>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleDetail(item.id)}
-                                    >
-                                        Xem chi tiết
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => handleEdit(item.id)}
-                                    >
-                                        Chỉnh sửa
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-
-                        {promotions.length === 0 && (
-                            <tr>
-                                <td colSpan="9">
-                                    Chưa có khuyến mãi
-                                </td>
-                            </tr>
-                        )}
-                        </tbody>
-                    </table>
-                )}
-            </div>
-        </section>
-    )
+    <div className="admin-promotion__card admin-promotion__list">
+      <div className="admin-promotion__section-heading"><div><h3>Danh sách khuyến mãi</h3><p>{loading ? 'Đang tải dữ liệu…' : error ? 'Chưa tải được dữ liệu' : `${filtered.length} / ${promotions.length} chương trình`}</p></div></div>
+      {!loading && !error && promotions.length > 0 && <search className="admin-promotion__filters" aria-label="Lọc khuyến mãi"><label htmlFor="promotion-search">Tìm theo tên hoặc mã<input id="promotion-search" type="search" value={query} onChange={(event) => { setQuery(event.target.value); setPage(0) }} placeholder="Tên hoặc mã KM" /></label><label htmlFor="promotion-filter-status">Trạng thái<select id="promotion-filter-status" value={statusFilter} onChange={(event) => { setStatusFilter(event.target.value); setPage(0) }}><option value="all">Tất cả</option><option value="effective">Đang diễn ra</option><option value="upcoming">Sắp diễn ra</option><option value="expired">Đã hết hạn</option><option value="inactive">Ngừng hoạt động</option></select></label></search>}
+      {loading ? <p className="admin-promotion__state" role="status">Đang tải danh sách khuyến mãi…</p> : null}
+      {!loading && error ? <div className="admin-promotion__empty" role="alert"><h4>Không thể tải danh sách</h4><p>{error}</p><button type="button" onClick={retry}>Thử lại</button></div> : null}
+      {!loading && !error && promotions.length === 0 ? <div className="admin-promotion__empty"><h4>Chưa có khuyến mãi</h4><p>Tạo chương trình đầu tiên để hiển thị tại đây.</p><Link to="/admin/promotions/new">Thêm khuyến mãi</Link></div> : null}
+      {!loading && !error && promotions.length > 0 && filtered.length === 0 ? <p className="admin-promotion__state">Không có khuyến mãi phù hợp bộ lọc.</p> : null}
+      {!loading && !error && filtered.length > 0 ? <><div className="admin-promotion__items">{visiblePromotions.map((promotion) => <PromotionCard key={promotion.id} promotion={promotion} />)}</div><nav className="admin-promotion__pagination" aria-label="Phân trang khuyến mãi"><p>Hiển thị {currentPage * pageSize + 1}–{Math.min((currentPage + 1) * pageSize, filtered.length)} / {filtered.length}</p><div><button type="button" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>Trang trước</button><span>Trang {currentPage + 1} / {pageCount}</span><button type="button" disabled={currentPage >= pageCount - 1} onClick={() => setPage(currentPage + 1)}>Trang sau</button></div></nav></> : null}
+    </div>
+  </section>
 }
