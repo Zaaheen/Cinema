@@ -20,6 +20,7 @@ export function MainLayout() {
         <nav className="site-nav">
           <Link to="/">Trang chủ</Link>
           <Link to="/movies">Phim</Link>
+          <Link to="/promotions">Khuyến mãi</Link>
           {isAuthenticated ? (
             <>
               <Link to={roleHome(user?.role)}>{roleLabel(user?.role)}</Link>

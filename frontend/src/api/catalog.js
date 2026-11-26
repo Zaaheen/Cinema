@@ -14,6 +14,12 @@ export async function fetchPromotions() {
   const { data } = await apiClient.get('/promotions')
   return data.data
 }
+export async function fetchPromotion(promotionId) {
+  const { data } = await apiClient.get(
+      `/promotions/${promotionId}`
+  )
+  return data.data
+}
 
 export async function fetchTicketPrices() {
   const { data } = await apiClient.get('/ticket-prices')

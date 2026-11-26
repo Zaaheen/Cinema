@@ -45,6 +45,17 @@ public class CatalogController {
     @GetMapping("/promotions") @Operation(summary = "Khuyến mãi đang công bố")
     public ApiResponse<List<PromotionResponse>> promotions() { return ApiResponse.ok(catalogService.promotions()); }
 
+
+    @GetMapping("/promotions/{promotionId}")
+    @Operation(summary = "Chi tiết khuyến mãi")
+    public ApiResponse<PromotionResponse> promotion(
+            @PathVariable Long promotionId
+    ) {
+        return ApiResponse.ok(
+                catalogService.promotion(promotionId)
+        );
+    }
+
     @GetMapping("/ticket-prices") @Operation(summary = "Giá vé đang áp dụng")
     public ApiResponse<List<TicketPriceResponse>> ticketPrices() { return ApiResponse.ok(catalogService.ticketPrices()); }
 

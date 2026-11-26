@@ -13,6 +13,7 @@ public interface CatalogService {
     PageResponse<MovieSummaryResponse> movies(String status, String query, int page, int size);
     MovieDetailResponse movie(Long movieId);
     List<PromotionResponse> promotions();
+    PromotionResponse promotion(Long promotionId);
     List<TicketPriceResponse> ticketPrices();
     List<ShowtimeResponse> showtimes(Long movieId, LocalDate date);
 }

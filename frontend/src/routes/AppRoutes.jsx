@@ -14,6 +14,8 @@ import { RoleHomeRoute } from './RoleHomeRoute'
 import { PromotionAdminPage } from '../pages/PromotionAdminPage'
 import { PromotionFormPage } from '../pages/PromotionFormPage'
 import { PromotionDetailPage } from '../pages/PromotionDetailPage'
+import { PromotionListPage } from '../pages/PromotionListPage'
+import { PromotionCustomerDetailPage } from '../pages/PromotionCustomerDetailPage'
 const MoviesPage = lazy(() => import('../pages/MoviesPage').then((module) => ({ default: module.MoviesPage })))
 const MovieDetailPage = lazy(() => import('../pages/MovieDetailPage').then((module) => ({ default: module.MovieDetailPage })))
 
@@ -30,6 +32,8 @@ export function AppRoutes() {
         <Route path="register" element={<RegisterPage />} />
         <Route path="movies" element={<CatalogRoute><MoviesPage /></CatalogRoute>} />
         <Route path="movies/:movieId" element={<CatalogRoute><MovieDetailPage /></CatalogRoute>} />
+        <Route path="promotions" element={<PromotionListPage />} />
+        <Route path="promotions/:promotionId" element={<PromotionCustomerDetailPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="dashboard" element={<RoleHomeRoute />} />
         </Route>

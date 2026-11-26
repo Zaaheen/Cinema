@@ -9,12 +9,14 @@ import com.cinema.dto.catalog.PromotionResponse;
 import com.cinema.dto.catalog.ShowtimeResponse;
 import com.cinema.dto.catalog.TicketPriceResponse;
 import com.cinema.entity.Movie;
+import com.cinema.entity.Promotion;
 import com.cinema.exception.BusinessException;
 import com.cinema.repository.MovieRepository;
 import com.cinema.repository.PromotionRepository;
 import com.cinema.repository.SeatPriceRepository;
 import com.cinema.repository.ShowtimeRepository;
 import com.cinema.service.CatalogService;
+
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -116,10 +118,21 @@ public class CatalogServiceImpl implements CatalogService {
 
     @Override
     public List<PromotionResponse> promotions() {
-        return promotionRepository.findPublished(Instant.now())
+        return promotionRepository.findAllByOrderByEndsAtAsc()
                 .stream()
                 .map(PromotionResponse::from)
                 .toList();
+    }
+
+    @Override
+    public PromotionResponse promotion(Long promotionId) {
+
+        Promotion promotion = promotionRepository.findById(promotionId)
+                .orElseThrow(() ->
+                        BusinessException.notFound("Không tìm thấy khuyến mãi")
+                );
+
+        return PromotionResponse.from(promotion);
     }
 
     @Override

@@ -9,4 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 public interface PromotionRepository extends JpaRepository<Promotion, Long> {
     @Query("select p from Promotion p where p.status = 'ACTIVE' and p.startsAt <= :now and p.endsAt >= :now order by p.endsAt asc")
     List<Promotion> findPublished(Instant now);
+    List<Promotion> findAllByOrderByEndsAtAsc();
+
 }
